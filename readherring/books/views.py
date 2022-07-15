@@ -49,11 +49,11 @@ def get_create_books(request):
     elif request.method == 'POST':
         # data = request.body
         data = request.body.decode('utf-8')
-        data = json.loads(data)
+        json_data = json.loads(data)
         # print(type(data))
-        title = data['title']
-        author = data['author']
-        ISBN = data['ISBN']
+        title = json_data['title']
+        author = json_data['author']
+        ISBN = json_data['ISBN']
         collection_name.insert_one({"title": title,"author": author,"ISBN": ISBN, "reviews": []})
         data = collection_name.find({'ISBN': ISBN})
         book = data[0]
@@ -72,8 +72,27 @@ def get_by_ISBN(request, ISBN):
         book.pop('_id', None)
         return JsonResponse(book, safe=False)
     elif request.method == 'PATCH':
-        collection_name.update_one({'ISBN': ISBN_string},{'$push':{'reviews': {'username': 'user', 'reply': 'review'}}})
-        return HttpResponse('Review Added to Database')
+        data = request.body.decode('utf-8')
+        json_data = json.loads(data)
+        if json_data['method'] == 'add_review':
+            username = json_data['username']
+            review = json_data['review']
+            collection_name.update_one({'ISBN': ISBN_string},{'$push':{'reviews': {'username': username, 'review': review}}}, upsert=True)
+            return HttpResponse('Review Added to Database')
+        
+        elif json_data['method'] == 'forums':
+            if json_data['sub_method'] == 'new_thread':
+                username = json_data['username']
+                title = json_data['thread_title']
+                first_message = json_data['first_message']
+                collection_name.update_one({'ISBN': ISBN_string},{'$push':{'threads': {'username': username, 'title': title, 'first_message': first_message }}}, upsert=True)
+                return HttpResponse('New Thread Added to Database')
+            # elif json_data['sub_method'] == 'thread_message':
+                
+
+
+
+
 
 
 # update_data = collection_name.update_one({'medicine_id':'RR000123456'}, {'$set':{'common_name':'Paracetamol 500'}})
