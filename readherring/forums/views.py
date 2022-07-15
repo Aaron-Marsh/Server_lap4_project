@@ -13,23 +13,20 @@ collection_name = db['Forums']
 collection_name.drop({})
 #let's create two documents
 thread1 = {
-    "title": "first book",
+    "title": "first title",
     "username": "user 1",
     "first_message": "message 1"
 }
 thread2 = {
     "title": "second title",
     "username": "user 2",
-    "first": "message 2"
+    "first_message": "message 2"
 }
 
 collection_name.insert_many([thread1, thread2])
 
 # Create your views here.
-def index(request):
-    return HttpResponse("<h1>Hello and welcome to my first <u>Django App</u> project!</h1>")
-
-def get_create_books(request):
+def get_create_threads(request):
     if request.method == 'GET':
         book_list = []
         data = collection_name.find({})
