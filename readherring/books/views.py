@@ -32,7 +32,7 @@ book2 = {
 
 collection_name.insert_many([book1, book2])
 
-books_list = collection_name.find({})
+# books_list = collection_name.find({})
 
 # for r in books_list:
 # 	print(r)
