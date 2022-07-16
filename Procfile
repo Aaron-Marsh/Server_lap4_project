@@ -1,1 +1,1 @@
-web: gunicorn readherring.readherring.wsgi
+web: gunicorn readherring.wsgi
