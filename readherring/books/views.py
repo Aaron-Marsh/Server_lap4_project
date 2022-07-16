@@ -1,7 +1,8 @@
-from django.shortcuts import render
+# from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from bson.json_util import loads, dumps
 import json
+import requests
 
 import pymongo
 my_client = pymongo.MongoClient('mongodb+srv://readherring:readherring@readherring.qlngl1v.mongodb.net/?retryWrites=true&w=majority')
@@ -16,18 +17,22 @@ book1 = {
     "title": "first book",
     "author": "first author",
     "ISBN": "12345",
-    "reviews": []
+    "reviews": [],
+    "rating": 0,
+    "num_ratings": 0
 }
 book2 = {
     "title": "second title",
     "author" : "second author",
     "ISBN": "54321",
-    "reviews": []
+    "reviews": [],
+    "rating": 0,
+    "num_ratings": 0
 }
 
 collection_name.insert_many([book1, book2])
 
-books_list = collection_name.find({})
+# books_list = collection_name.find({})
 
 # for r in books_list:
 # 	print(r)
@@ -47,10 +52,8 @@ def get_create_books(request):
             book_list.append(book)
         return JsonResponse(book_list, safe=False)
     elif request.method == 'POST':
-        # data = request.body
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
-        # print(type(data))
         title = json_data['title']
         author = json_data['author']
         ISBN = json_data['ISBN']
@@ -72,26 +75,40 @@ def get_by_ISBN(request, ISBN):
         book.pop('_id', None)
         return JsonResponse(book, safe=False)
     elif request.method == 'PATCH':
-        data = request.body.decode('utf-8')
-        json_data = json.loads(data)
+        body = request.body.decode('utf-8')
+        json_data = json.loads(body)
         if json_data['method'] == 'add_review':
             username = json_data['username']
             review = json_data['review']
             collection_name.update_one({'ISBN': ISBN_string},{'$push':{'reviews': {'username': username, 'review': review}}}, upsert=True)
             return HttpResponse('Review Added to Database')
         
-        elif json_data['method'] == 'forums':
-            if json_data['sub_method'] == 'new_thread':
-                username = json_data['username']
-                title = json_data['thread_title']
-                first_message = json_data['first_message']
-                collection_name.update_one({'ISBN': ISBN_string},{'$push':{'threads': {'username': username, 'title': title, 'first_message': first_message }}}, upsert=True)
-                return HttpResponse('New Thread Added to Database')
-            # elif json_data['sub_method'] == 'thread_message':
-                
 
-
-
+def get_books_from_api(request):
+    body = request.body.decode('utf-8')
+    j_body = json.loads(body)
+    query_type = j_body['query_type']
+    query = j_body['query']
+    num_results = j_body['num_results']
+    response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={j_body['query_type']}:{j_body['query']}&max_results={j_body['num_results']}")
+    json_res = response.json()
+    books = []
+    for book in json_res["items"]:
+        ISBN = book['volumeInfo']['industryIdentifiers'][0];['identifier']
+        # request = 
+        # get_by_ISBN(request, ISBN)
+        our_book = {
+            'title': book['volumeInfo']['title'],
+            'author': book['volumeInfo']['authors'],
+            'ISBN': ISBN,
+            'publisher': book['volumeInfo']['publisher'],
+            'publishedDate': book['volumeInfo']['publishedDate'],
+            'description': book['volumeInfo']['description'],
+            # 'author': book['volumeInfo']['author'],
+        }
+        books.append(our_book)
+    
+    return JsonResponse(books, safe=False)
 
 
 
