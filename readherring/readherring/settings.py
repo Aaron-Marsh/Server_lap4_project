@@ -92,8 +92,8 @@ WSGI_APPLICATION = 'readherring.wsgi.application'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
-import mongoengine
-mongoengine.connect(db='readherring', host='mongodb+srv://readherring:readherring@readherring.qlngl1v.mongodb.net/?retryWrites=true&w=majority', username='readherring', password='readherring')
+# import mongoengine
+# mongoengine.connect(db='readherring', host='mongodb+srv://readherring:readherring@readherring.qlngl1v.mongodb.net/?retryWrites=true&w=majority', username='readherring', password='readherring')
 
 AUTH_PASSWORD_VALIDATORS = [
     {
