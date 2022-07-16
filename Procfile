@@ -1,1 +1,1 @@
-web: gunicorn readherring.readherring.wsgi
+web: python readherring/manage.py runserver
