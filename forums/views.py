@@ -139,10 +139,10 @@ def get_by_id(request, id):
     # id_string = str(id)
     if request.method == 'GET':
         data = collection_name.find({"_id": ObjectId(id)})
-        book = data[0]
-        book['id'] = str(book['_id'])
-        book.pop('_id', None)
-        return JsonResponse(book, safe=False)
+        thread = data[0]
+        thread['id'] = str(thread['_id'])
+        thread.pop('_id', None)
+        return JsonResponse(thread, safe=False)
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
