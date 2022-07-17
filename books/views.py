@@ -92,18 +92,22 @@ def get_books_from_api(request):
     books = []
     for book in json_res["items"]:
         ISBN = book['volumeInfo']['industryIdentifiers'][0]['identifier']
-        # request = 
-        # get_by_ISBN(request, ISBN)
-        our_book = {
+        collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
+        our_data = collection_name.find({'ISBN': ISBN})
+        our_book = our_data[0]
+        combined_book = {
             'title': book.get('volumeInfo',{}).get('title', 'Title Not Found'),
             'author': book.get('volumeInfo',{}).get('authors', 'Author Not Found'),
             'ISBN': ISBN,
             'publisher': book.get('volumeInfo',{}).get('publisher', 'Publisher Not Found'),
             'publishedDate': book.get('volumeInfo',{}).get('publishedDate', 'Published Date Not Found'),
             'description': book.get('volumeInfo',{}).get('description', 'Description Not Found'),
-            'images': book.get('volumeInfo',{}).get('imageLinks', 'No Image Found')
+            'images': book.get('volumeInfo',{}).get('imageLinks', 'No Image Found'),
+            'reviews': our_book.get('reviews', []),
+            'rating': our_book.get('rating', 0),
+            'num_ratings': our_book.get('num_rating', 0)
         }
-        books.append(our_book)
+        books.append(combined_book)
     
     return JsonResponse(books, safe=False)
 
