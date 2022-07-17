@@ -26,45 +26,46 @@ user2 = {
 collection_name.insert_many([user1, user2])
 
 # Create your views here.
-def get_create_threads(request):
+def get_users(request):
     if request.method == 'GET':
-        thread_list = []
+        user_list = []
         data = collection_name.find({})
-        for thread in data:
-            thread['id'] = str(thread['_id'])
-            thread.pop('_id', None)
-            thread_list.append(thread)
-        return JsonResponse(thread_list, safe=False)
-    elif request.method == 'POST':
-        data = request.body.decode('utf-8')
-        json_data = json.loads(data)
-        title = json_data['title']
-        username = json_data['username']
-        first_message = json_data['first_message']
-        collection_name.insert_one({"title": title,"username": username,"first_message": first_message})
-        return HttpResponse('New Thread Created!')
+        for user in data:
+            user['id'] = str(user['_id'])
+            user.pop('_id', None)
+            user_list.append(user)
+        return JsonResponse(user_list, safe=False)
+    # elif request.method == 'POST':
+    #     data = request.body.decode('utf-8')
+    #     json_data = json.loads(data)
+    #     title = json_data['title']
+    #     username = json_data['username']
+    #     first_message = json_data['first_message']
+    #     collection_name.insert_one({"title": title,"username": username,"first_message": first_message})
+    #     return HttpResponse('New Thread Created!')
     else:
         print('error')
 
-def get_by_id(request, id):
+def get_by_username(request, username):
     # id_string = str(id)
     if request.method == 'GET':
-        data = collection_name.find({"_id": ObjectId(id)})
-        thread = data[0]
-        thread['id'] = str(thread['_id'])
-        thread.pop('_id', None)
-        return JsonResponse(thread, safe=False)
+        user = collection_name.find_one({"username": username})
+        user['id'] = str(user['_id'])
+        user.pop('_id', None)
+        return JsonResponse(user, safe=False)
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
 
-        if json_data['method'] == 'thread_message':
+        if json_data['method'] == 'add_to_read':
             username = json_data['username']
-            message = json_data['message']
+            ISBN = json_data['ISBN']
+            title = json_data['title']
+            author = json_data['author']
             message_id = str(uuid.uuid4())
-            collection_name.update_one({'_id': ObjectId(id)},{'$push':{'messages': {'message_id': message_id, 'username': username, 'message': message, 'replies': [] }}}, upsert=True)
+            collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'username': username, 'message': message, 'replies': [] }}}, upsert=True)
             return HttpResponse('New Message Added To Thread!')
-        elif json_data['method'] == 'reply_message':
+        elif json_data['method'] == 'add_to_favourites':
             message_id = json_data['message_id']
             username = json_data['username']
             reply = json_data['reply']
