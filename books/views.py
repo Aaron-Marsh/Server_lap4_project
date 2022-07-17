@@ -85,11 +85,16 @@ def get_by_ISBN(request, ISBN):
             book = collection_name.find_one({'ISBN': ISBN_string})
             original_average_rating = book['rating']
             original_num_ratings = book['num_ratings']
-            new_rating = json_data['rating']
-            new_num_ratings = int(original_num_ratings + new_rating / abs(new_rating))
-            new_average_rating = (original_average_rating * original_num_ratings + new_rating) / new_num_ratings
+            personal_rating = json_data['rating']
+            new_num_ratings = int(original_num_ratings + personal_rating / abs(personal_rating))
+            if new_num_ratings != 0:
+                new_average_rating = (original_average_rating * original_num_ratings + personal_rating) / new_num_ratings
+            else:
+                new_average_rating = 0
+            username = json_data['username']
             collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
-            return HttpResponse('Rating Updated in Database')
+            db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$inc':{'has_read.$.personal_rating': personal_rating}})
+            return HttpResponse(f'Rating Updated in Database for {username}')
 
 def get_books_from_api(request):
     body = request.body.decode('utf-8')

@@ -138,8 +138,7 @@ def get_create_threads(request):
 def get_by_id(request, id):
     # id_string = str(id)
     if request.method == 'GET':
-        data = collection_name.find({"_id": ObjectId(id)})
-        thread = data[0]
+        thread = collection_name.find_one({"_id": ObjectId(id)})
         thread['id'] = str(thread['_id'])
         thread.pop('_id', None)
         return JsonResponse(thread, safe=False)
