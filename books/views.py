@@ -87,7 +87,7 @@ def get_by_ISBN(request, ISBN):
 def get_books_from_api(request):
     body = request.body.decode('utf-8')
     j_body = json.loads(body)
-    response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={j_body['query_type']}:{j_body['query']}&max_results={j_body['num_results']}")
+    response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={j_body.get('query_type', '')}:{j_body['query']}&max_results={j_body.get('num_results', '5')}")
     json_res = response.json()
     books = []
     for book in json_res["items"]:
@@ -95,13 +95,13 @@ def get_books_from_api(request):
         # request = 
         # get_by_ISBN(request, ISBN)
         our_book = {
-            'title': book['volumeInfo']['title'],
-            'author': book['volumeInfo']['authors'],
+            'title': book.get('volumeInfo',{}).get('title', 'Title Not Found'),
+            'author': book.get('volumeInfo',{}).get('authors', 'Author Not Found'),
             'ISBN': ISBN,
-            'publisher': book['volumeInfo']['publisher'],
-            'publishedDate': book['volumeInfo']['publishedDate'],
-            'description': book['volumeInfo']['description'],
-            # 'author': book['volumeInfo']['author'],
+            'publisher': book.get('volumeInfo',{}).get('publisher', 'Publisher Not Found'),
+            'publishedDate': book.get('volumeInfo',{}).get('publishedDate', 'Published Date Not Found'),
+            'description': book.get('volumeInfo',{}).get('description', 'Description Not Found'),
+            'images': book.get('volumeInfo',{}).get('imageLinks', 'No Image Found')
         }
         books.append(our_book)
     
