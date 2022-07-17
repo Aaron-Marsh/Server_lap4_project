@@ -58,8 +58,7 @@ def get_create_books(request):
         author = json_data['author']
         ISBN = json_data['ISBN']
         collection_name.insert_one({"title": title,"author": author,"ISBN": ISBN, "reviews": []})
-        data = collection_name.find({'ISBN': ISBN})
-        book = data[0]
+        book = collection_name.find_one({'ISBN': ISBN})
         book['id'] = str(book['_id'])
         book.pop('_id', None)
         return JsonResponse(book, safe=False)
@@ -69,8 +68,7 @@ def get_create_books(request):
 def get_by_ISBN(request, ISBN):
     ISBN_string = str(ISBN)
     if request.method == 'GET':
-        data = collection_name.find({'ISBN': ISBN_string})
-        book = data[0]
+        book = collection_name.find_one({'ISBN': ISBN_string})
         book['id'] = str(book['_id'])
         book.pop('_id', None)
         return JsonResponse(book, safe=False)
@@ -82,7 +80,16 @@ def get_by_ISBN(request, ISBN):
             review = json_data['review']
             collection_name.update_one({'ISBN': ISBN_string},{'$push':{'reviews': {'username': username, 'review': review}}}, upsert=True)
             return HttpResponse('Review Added to Database')
-        
+        elif json_data['method'] == 'add_rating':
+            collection_name.update_one({'ISBN': ISBN_string},{'$inc':{'rating': 0, 'num_ratings': 0}}, upsert=True)
+            book = collection_name.find_one({'ISBN': ISBN_string})
+            original_average_rating = book['rating']
+            original_num_ratings = book['num_ratings']
+            new_rating = json_data['rating']
+            new_num_ratings = int(original_num_ratings + new_rating / abs(new_rating))
+            new_average_rating = (original_average_rating * original_num_ratings + new_rating) / new_num_ratings
+            collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
+            return HttpResponse('Rating Added to Database')
 
 def get_books_from_api(request):
     body = request.body.decode('utf-8')
@@ -93,8 +100,7 @@ def get_books_from_api(request):
     for book in json_res["items"]:
         ISBN = book['volumeInfo']['industryIdentifiers'][0]['identifier']
         collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
-        our_data = collection_name.find({'ISBN': ISBN})
-        our_book = our_data[0]
+        our_book = collection_name.find_one({'ISBN': ISBN})
         combined_book = {
             'title': book.get('volumeInfo',{}).get('title', 'Title Not Found'),
             'author': book.get('volumeInfo',{}).get('authors', 'Author Not Found'),
@@ -105,7 +111,7 @@ def get_books_from_api(request):
             'images': book.get('volumeInfo',{}).get('imageLinks', 'No Image Found'),
             'reviews': our_book.get('reviews', []),
             'rating': our_book.get('rating', 0),
-            'num_ratings': our_book.get('num_rating', 0)
+            'num_ratings': our_book.get('num_ratings', 0)
         }
         books.append(combined_book)
     
