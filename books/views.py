@@ -87,14 +87,11 @@ def get_by_ISBN(request, ISBN):
 def get_books_from_api(request):
     body = request.body.decode('utf-8')
     j_body = json.loads(body)
-    query_type = j_body['query_type']
-    query = j_body['query']
-    num_results = j_body['num_results']
     response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={j_body['query_type']}:{j_body['query']}&max_results={j_body['num_results']}")
     json_res = response.json()
     books = []
     for book in json_res["items"]:
-        ISBN = book['volumeInfo']['industryIdentifiers'][0];['identifier']
+        ISBN = book['volumeInfo']['industryIdentifiers'][0]['identifier']
         # request = 
         # get_by_ISBN(request, ISBN)
         our_book = {

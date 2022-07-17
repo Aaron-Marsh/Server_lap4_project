@@ -18,4 +18,4 @@ mongoengine = "*"
 python_version = "3.10"
 
 [scripts]
-start = "python readherring/manage.py runserver"
+start = "python manage.py runserver"
