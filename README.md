@@ -1,6 +1,8 @@
 # Server_lap4_project
 
 ## Installation & usage
+### Deployment
+Access the deployed server site [here](https://read-herring.herokuapp.com/).
 
 ## Contact
 
