@@ -58,18 +58,15 @@ def get_by_username(request, username):
         json_data = json.loads(data)
 
         if json_data['method'] == 'add_to_read':
-            username = json_data['username']
             ISBN = json_data['ISBN']
             title = json_data['title']
             author = json_data['author']
-            collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False, 'rating': 0 }}}, upsert=True)
-            return HttpResponse('New Book Added To Read!')
-        elif json_data['method'] == 'add_to_favourites':
-            message_id = json_data['message_id']
-            username = json_data['username']
-            reply = json_data['reply']
-            reply_to = json_data['reply_to']
-            collection_name.update_one({'_id': ObjectId(id), "messages.message_id": message_id} ,{'$push':{'messages.$.replies': {'username': username, 'reply': reply, 'reply_to': reply_to}}}, upsert=True)
-            return HttpResponse('New Reply To Message in Thread!')
+            collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False, 'personal_rating': 0 }}}, upsert=True)
+            return HttpResponse(f'New book with ISBN: {ISBN} added to read for {username}!')
+        elif json_data['method'] == 'edit_favourite_status':
+            ISBN = json_data['ISBN']
+            set_favourited = json_data['set_favourited']
+            collection_name.update_one({'username': username, "has_read.ISBN": ISBN} ,{'$set':{'has_read.$.favourited': set_favourited}}, upsert=True)
+            return HttpResponse(f'Book with ISBN: {ISBN} has favourite status set to {set_favourited} for {username}!')
 
 
