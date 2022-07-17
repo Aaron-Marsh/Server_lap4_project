@@ -62,9 +62,8 @@ def get_by_username(request, username):
             ISBN = json_data['ISBN']
             title = json_data['title']
             author = json_data['author']
-            message_id = str(uuid.uuid4())
-            collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'username': username, 'message': message, 'replies': [] }}}, upsert=True)
-            return HttpResponse('New Message Added To Thread!')
+            collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False, 'rating': 0 }}}, upsert=True)
+            return HttpResponse('New Book Added To Read!')
         elif json_data['method'] == 'add_to_favourites':
             message_id = json_data['message_id']
             username = json_data['username']
