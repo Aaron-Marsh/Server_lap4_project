@@ -89,7 +89,7 @@ def get_by_ISBN(request, ISBN):
             new_num_ratings = int(original_num_ratings + new_rating / abs(new_rating))
             new_average_rating = (original_average_rating * original_num_ratings + new_rating) / new_num_ratings
             collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
-            return HttpResponse('Rating Added to Database')
+            return HttpResponse('Rating Updated in Database')
 
 def get_books_from_api(request):
     body = request.body.decode('utf-8')
