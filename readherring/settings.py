@@ -56,7 +56,7 @@ MIDDLEWARE = [
 
 ALLOWED_HOSTS=['*']
 CORS_ORIGIN_ALLOW_ALL = True
-CSRF_TRUSTED_ORIGINS = ['https://hoppscotch.io', 'http://localhost:3000/', 'https://read-herring.netlify.app/']
+CSRF_TRUSTED_ORIGINS = ['https://hoppscotch.io', 'http://localhost:3000', 'https://read-herring.netlify.app']
 
 
 ROOT_URLCONF = 'readherring.urls'

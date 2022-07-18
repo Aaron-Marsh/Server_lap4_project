@@ -87,6 +87,10 @@ def register(request):
     data = request.body.decode('utf-8')
     json_data = json.loads(data)
     username = json_data['username']
+    # exists = collection_name.find_one({username: username}, {"_id" : 1});
+    # print('***************************')
+    # print(exists)
+
     email = json_data['email']
     password = json_data['password']
     hashed_password = make_password(password)
@@ -99,12 +103,12 @@ def login(request):
     email = json_data['email']
     password = json_data['password']
     db_data = collection_name.find_one({"email": email})
+    db_data['id'] = str(db_data['_id'])
+    db_data.pop('_id', None)
     db_password = db_data['password']
     check = check_password(password, db_password)
     if check == True:
-        db_data['id'] = str(db_data['_id'])
-        db_data.pop('_id', None)
-        db_data.pop('password')
+        db_data.pop('password', None)
         return JsonResponse(db_data, safe=False)
     else:
         return HttpResponse('Incorrect Password')
