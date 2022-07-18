@@ -91,10 +91,10 @@ def register(request):
     username_exists = collection_name.find_one({'username': username}, {"username" : 1});
     email_exists = collection_name.find_one({'email': email}, {"email" : 1});
     if username_exists != None:
-        response = {'msg': f'A user already exists with username {username}'}
+        response = {'error': f'A user already exists with username {username}'}
         return JsonResponse(response, safe=False)
     elif email_exists != None:
-        response = {'msg': f'A user already exists with email {email}'}
+        response = {'error': f'A user already exists with email {email}'}
         return JsonResponse(response, safe=False)
     else:
         password = json_data['password']
@@ -112,7 +112,7 @@ def login(request):
     if db_data == None:
         db_data = collection_name.find_one({"email": user_input})
         if db_data == None:
-            response = {'msg': 'An account with that username / email could not be found'}
+            response = {'error': 'An account with that username / email could not be found'}
             return JsonResponse(response, safe=False)
     db_password = db_data['password']
     check = check_password(password, db_password)
@@ -122,7 +122,7 @@ def login(request):
         db_data.pop('password', None)
         return JsonResponse(db_data, safe=False)
     else:
-        response = {'msg': 'Incorrect Password'}
+        response = {'error': 'Incorrect Password'}
         return JsonResponse(response, safe=False)
 
 
