@@ -63,9 +63,12 @@ def get_by_username(request, username):
     # id_string = str(id)
     if request.method == 'GET':
         user = collection_name.find_one({"username": username})
-        user['id'] = str(user['_id'])
-        user.pop('_id', None)
-        return JsonResponse(user, safe=False)
+        if user == None:
+            return HttpResponse(f'Could not find user with username: {username}')
+        else:
+            user['id'] = str(user['_id'])
+            user.pop('_id', None)
+            return JsonResponse(user, safe=False)
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
@@ -114,16 +117,17 @@ def login(request):
         if db_data == None:
             response = {'error': 'An account with that username / email could not be found'}
             return JsonResponse(response, safe=False)
-    db_password = db_data['password']
-    check = check_password(password, db_password)
-    db_data['id'] = str(db_data['_id'])
-    db_data.pop('_id', None)
-    if check == True:
-        db_data.pop('password', None)
-        return JsonResponse(db_data, safe=False)
     else:
-        response = {'error': 'Incorrect Password'}
-        return JsonResponse(response, safe=False)
+        db_password = db_data['password']
+        check = check_password(password, db_password)
+        db_data['id'] = str(db_data['_id'])
+        db_data.pop('_id', None)
+        if check == True:
+            db_data.pop('password', None)
+            return JsonResponse(db_data, safe=False)
+        else:
+            response = {'error': 'Incorrect Password'}
+            return JsonResponse(response, safe=False)
 
 
 def not_found_404(request, exception):
