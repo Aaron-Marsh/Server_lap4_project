@@ -139,9 +139,12 @@ def get_by_id(request, id):
     # id_string = str(id)
     if request.method == 'GET':
         thread = collection_name.find_one({"_id": ObjectId(id)})
-        thread['id'] = str(thread['_id'])
-        thread.pop('_id', None)
-        return JsonResponse(thread, safe=False)
+        if thread == None:
+            return HttpResponse(f'Could not find thread with id: {id}')
+        else:
+            thread['id'] = str(thread['_id'])
+            thread.pop('_id', None)
+            return JsonResponse(thread, safe=False)
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
