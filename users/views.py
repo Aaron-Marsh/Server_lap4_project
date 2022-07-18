@@ -21,7 +21,7 @@ db = my_client['readherring']
 
 collection_name = db['Users']
 
-# collection_name.drop({})
+collection_name.drop({})
 
 user1 = {
     'username': 'user1',
@@ -32,7 +32,7 @@ user2 = {
     'password': 'pass'
 }
 
-# collection_name.insert_many([user1, user2])
+collection_name.insert_many([user1, user2])
 
 
 # Create your views here.
