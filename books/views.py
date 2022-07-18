@@ -11,8 +11,8 @@ db = my_client['readherring']
 
 collection_name = db['Books']
 
-collection_name.drop({})
-#let's create two documents
+# collection_name.drop({})
+
 book1 = {
     "title": "first book",
     "author": "first author",
@@ -30,13 +30,8 @@ book2 = {
     "num_ratings": 0
 }
 
-collection_name.insert_many([book1, book2])
+# collection_name.insert_many([book1, book2])
 
-# books_list = collection_name.find({})
-
-# for r in books_list:
-# 	print(r)
-# print(dumps(books_list))
 
 # Create your views here.
 def index(request):
@@ -68,13 +63,16 @@ def get_create_books(request):
 def get_by_ISBN(request, ISBN):
     ISBN_string = str(ISBN)
     if request.method == 'GET':
-        book = collection_name.find_one({'ISBN': ISBN_string})
-        if book == None:
-            return HttpResponse(f'Could not find book with ISBN: {ISBN_string}')
-        else:
+        try:
+            book = collection_name.find_one({'ISBN': ISBN_string})
+        # if book == None:
+            # return HttpResponse(f'Could not find book with ISBN: {ISBN_string}')
+        # else:
             book['id'] = str(book['_id'])
             book.pop('_id', None)
             return JsonResponse(book, safe=False)
+        except TypeError:
+            return HttpResponse(f'Could not find book with ISBN: {ISBN_string}')
        
     elif request.method == 'PATCH':
         body = request.body.decode('utf-8')
@@ -135,5 +133,5 @@ def not_found_404(request, exception):
 
 def server_error_500(request):
     response = {'error': '500 Error'}
-    return JsonResponse(response, safe=False)
+    return HttpResponse('500 error')
 
