@@ -10,6 +10,8 @@ from django.conf import settings
 import json
 import uuid
 
+from django.contrib.auth.hashers import make_password, check_password
+
 
 
 import pymongo
@@ -81,45 +83,72 @@ def get_by_username(request, username):
             return HttpResponse(f'Book with ISBN: {ISBN} has favourite status set to {set_favourited} for {username}!')
 
 
-def user_login(request):
-    # gets response from FE
-    user_information = json.loads(request.body)
-    email = user_information['email']
-    password = user_information['password']
-    username = User.objects.get(email=email.lower()).username
-    # authenticate user
-    user = authenticate(request, username=username, password=password)
-    # check user exists
-    if user is not None:
-        login(request, user)
-        return JsonResponse({'message': 'login successful'})
+def register(request):
+    data = request.body.decode('utf-8')
+    json_data = json.loads(data)
+    username = json_data['username']
+    email = json_data['email']
+    password = json_data['password']
+    hashed_password = make_password(password)
+    collection_name.insert_one({"username": username,"password": hashed_password,"email": email})
+    return HttpResponse('New User registered')
+
+def login(request):
+    data = request.body.decode('utf-8')
+    json_data = json.loads(data)
+    email = json_data['email']
+    password = json_data['password']
+    db_data = collection_name.find_one({"email": email})
+    db_password = db_data['password']
+    check = check_password(password, db_password)
+    if check == True:
+        db_data['id'] = str(db_data['_id'])
+        db_data.pop('_id', None)
+        db_data.pop('password')
+        return JsonResponse(db_data, safe=False)
     else:
-        return JsonResponse({'error': 'login unsuccessful'})
+        return HttpResponse('Incorrect Password')
 
 
-# logout route
-def user_logout(request):
-    # to be deleted when we can log in
-    user1 = authenticate(request, username='will', password='will')
-    if user1 is not None:
-        login(request, user1)
-    #########
-    logout(request)
-    return JsonResponse({'message': 'User logged out'})
+# def user_login(request):
+#     # gets response from FE
+#     user_information = json.loads(request.body)
+#     email = user_information['email']
+#     password = user_information['password']
+#     username = User.objects.get(email=email.lower()).username
+#     # authenticate user
+#     user = authenticate(request, username=username, password=password)
+#     # check user exists
+#     if user is not None:
+#         login(request, user)
+#         return JsonResponse({'message': 'login successful'})
+#     else:
+#         return JsonResponse({'error': 'login unsuccessful'})
 
 
-# create a new user route
-def new_user(request):
-    # get information from FE
-    # user_information = json.loads(request.body)
-    user_information = {
-        'name': 'William',
-        'email': 'w@g.com',
-        'password': 'password',
-    }
-    # create user with data
-    User.objects.create_user(
-        username=user_information['name'], email=user_information['email'], password=user_information['password'])
-    return JsonResponse({'message': 'user successfully created'})
+# # logout route
+# def user_logout(request):
+#     # to be deleted when we can log in
+#     user1 = authenticate(request, username='will', password='will')
+#     if user1 is not None:
+#         login(request, user1)
+#     #########
+#     logout(request)
+#     return JsonResponse({'message': 'User logged out'})
+
+
+# # create a new user route
+# def new_user(request):
+#     # get information from FE
+#     # user_information = json.loads(request.body)
+#     user_information = {
+#         'name': 'William',
+#         'email': 'w@g.com',
+#         'password': 'password',
+#     }
+#     # create user with data
+#     User.objects.create_user(
+#         username=user_information['name'], email=user_information['email'], password=user_information['password'])
+#     return JsonResponse({'message': 'user successfully created'})
 
 
