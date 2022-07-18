@@ -38,8 +38,9 @@ def get_create_threads(request):
         title = json_data['title']
         username = json_data['username']
         first_message = json_data['first_message']
-        collection_name.insert_one({"title": title,"username": username,"first_message": first_message})
-        return HttpResponse('New Thread Created!')
+        add_thread = collection_name.insert_one({'title': title, 'username': username, 'firstmessage': first_message })
+        thread_data = {'id': str(add_thread.inserted_id), 'title': title, 'username': username, 'firstmessage': first_message }
+        return JsonResponse(thread_data, safe=False)
     else:
         print('error')
 
@@ -56,7 +57,6 @@ def get_by_id(request, id):
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
-
         if json_data['method'] == 'thread_message':
             username = json_data['username']
             message = json_data['message']
