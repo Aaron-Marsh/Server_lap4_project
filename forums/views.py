@@ -68,8 +68,9 @@ def get_by_id(request, id):
             username = json_data['username']
             reply = json_data['reply']
             reply_to = json_data['reply_to']
-            collection_name.update_one({'_id': ObjectId(id), "messages.message_id": message_id} ,{'$push':{'messages.$.replies': {'username': username, 'reply': reply, 'reply_to': reply_to}}}, upsert=True)
-            return HttpResponse('New Reply To Message in Thread!')
+            reply_data = {'username': username, 'reply': reply, 'reply_to': reply_to}
+            collection_name.update_one({'_id': ObjectId(id), "messages.message_id": message_id} ,{'$push':{'messages.$.replies': reply_data}}, upsert=True)
+            return JsonResponse(reply_data, safe=False)
 
 
 def not_found_404(request, exception):
