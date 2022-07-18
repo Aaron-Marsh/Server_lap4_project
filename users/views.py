@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from bson.json_util import loads, dumps
-import json
 from bson.objectid import ObjectId
-import uuid;
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core import serializers
 from django.core.mail import send_mail
 from django.conf import settings
+import json
+import uuid
 
 
 
@@ -22,13 +22,7 @@ collection_name = db['Users']
 collection_name.drop({})
 
 
-
-
-
-
 # login route
-
-
 
 
 user1 = {
