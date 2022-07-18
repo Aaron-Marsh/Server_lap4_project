@@ -106,7 +106,7 @@ def register(request):
 def login(request):
     data = request.body.decode('utf-8')
     json_data = json.loads(data)
-    user_input = json_data['user_input']
+    user_input = json_data['userInput']
     password = json_data['password']
     db_data = collection_name.find_one({"username": user_input})
     if db_data == None:
