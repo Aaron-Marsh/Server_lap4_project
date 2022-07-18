@@ -87,31 +87,43 @@ def register(request):
     data = request.body.decode('utf-8')
     json_data = json.loads(data)
     username = json_data['username']
-    # exists = collection_name.find_one({username: username}, {"_id" : 1});
-    # print('***************************')
-    # print(exists)
-
     email = json_data['email']
-    password = json_data['password']
-    hashed_password = make_password(password)
-    collection_name.insert_one({"username": username,"password": hashed_password,"email": email})
-    return HttpResponse('New User registered')
+    username_exists = collection_name.find_one({'username': username}, {"username" : 1});
+    email_exists = collection_name.find_one({'email': email}, {"email" : 1});
+    if username_exists != None:
+        response = {'msg': f'A user already exists with username {username}'}
+        return JsonResponse(response, safe=False)
+    elif email_exists != None:
+        response = {'msg': f'A user already exists with email {email}'}
+        return JsonResponse(response, safe=False)
+    else:
+        password = json_data['password']
+        hashed_password = make_password(password)
+        collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email})
+        response = {'msg': 'You have successfully created a new account. Try to Login!'}
+        return JsonResponse(response, safe=False)
 
 def login(request):
     data = request.body.decode('utf-8')
     json_data = json.loads(data)
-    email = json_data['email']
+    user_input = json_data['user_input']
     password = json_data['password']
-    db_data = collection_name.find_one({"email": email})
-    db_data['id'] = str(db_data['_id'])
-    db_data.pop('_id', None)
+    db_data = collection_name.find_one({"username": user_input})
+    if db_data == None:
+        db_data = collection_name.find_one({"email": user_input})
+        if db_data == None:
+            response = {'msg': 'An account with that username / email could not be found'}
+            return JsonResponse(response, safe=False)
     db_password = db_data['password']
     check = check_password(password, db_password)
+    db_data['id'] = str(db_data['_id'])
+    db_data.pop('_id', None)
     if check == True:
         db_data.pop('password', None)
         return JsonResponse(db_data, safe=False)
     else:
-        return HttpResponse('Incorrect Password')
+        response = {'msg': 'Incorrect Password'}
+        return JsonResponse(response, safe=False)
 
 
 # def user_login(request):
