@@ -10,7 +10,6 @@ dnspython = "*"
 django-cors-headers = "*"
 requests = "*"
 gunicorn = "*"
-mongoengine = "*"
 
 [dev-packages]
 

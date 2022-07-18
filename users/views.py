@@ -111,8 +111,15 @@ def user_logout(request):
 # create a new user route
 def new_user(request):
     # get information from FE
-    user_information = json.loads(request.body)
+    # user_information = json.loads(request.body)
+    user_information = {
+        'name': 'William',
+        'email': 'w@g.com',
+        'password': 'password',
+    }
     # create user with data
     User.objects.create_user(
         username=user_information['name'], email=user_information['email'], password=user_information['password'])
     return JsonResponse({'message': 'user successfully created'})
+
+
