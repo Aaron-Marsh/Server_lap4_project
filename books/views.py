@@ -119,15 +119,14 @@ def get_books_from_api(request):
             'num_ratings': our_book.get('num_ratings', 0)
         }
         books.append(combined_book)
-    
     return JsonResponse(books, safe=False)
 
+def not_found_404(request, exception):
+    response = {'error': exception}
+    return JsonResponse(response, safe=False)
 
 
-# update_data = collection_name.update_one({'medicine_id':'RR000123456'}, {'$set':{'common_name':'Paracetamol 500'}})
-
-# count = collection_name.count()
-# print(count)
-
-# delete_data = collection_name.delete_one({'medicine_id':'RR000123456'})
+def server_error_500(request):
+    response = {'error': '500 Error'}
+    return JsonResponse(response, safe=False)
 

@@ -126,6 +126,17 @@ def login(request):
         return JsonResponse(response, safe=False)
 
 
+def not_found_404(request, exception):
+    response = {'error': exception}
+    return JsonResponse(response, safe=False)
+
+
+def server_error_500(request):
+    response = {'error': '500 Error'}
+    return JsonResponse(response, safe=False)
+
+
+
 # def user_login(request):
 #     # gets response from FE
 #     user_information = json.loads(request.body)

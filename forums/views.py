@@ -161,3 +161,12 @@ def get_by_id(request, id):
             return HttpResponse('New Reply To Message in Thread!')
 
 
+def not_found_404(request, exception):
+    response = {'error': exception}
+    return JsonResponse(response, safe=False)
+
+
+def server_error_500(request):
+    response = {'error': '500 Error'}
+    return JsonResponse(response, safe=False)
+
