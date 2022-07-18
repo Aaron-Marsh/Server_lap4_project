@@ -4,6 +4,13 @@ from bson.json_util import loads, dumps
 import json
 from bson.objectid import ObjectId
 import uuid;
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.core import serializers
+from django.core.mail import send_mail
+from django.conf import settings
+
+
 
 import pymongo
 my_client = pymongo.MongoClient('mongodb+srv://readherring:readherring@readherring.qlngl1v.mongodb.net/?retryWrites=true&w=majority')
@@ -13,6 +20,16 @@ db = my_client['readherring']
 collection_name = db['Users']
 
 collection_name.drop({})
+
+
+
+
+
+
+# login route
+
+
+
 
 user1 = {
     'username': 'user1',
@@ -70,3 +87,38 @@ def get_by_username(request, username):
             return HttpResponse(f'Book with ISBN: {ISBN} has favourite status set to {set_favourited} for {username}!')
 
 
+def user_login(request):
+    # gets response from FE
+    user_information = json.loads(request.body)
+    email = user_information['email']
+    password = user_information['password']
+    username = User.objects.get(email=email.lower()).username
+    # authenticate user
+    user = authenticate(request, username=username, password=password)
+    # check user exists
+    if user is not None:
+        login(request, user)
+        return JsonResponse({'message': 'login successful'})
+    else:
+        return JsonResponse({'error': 'login unsuccessful'})
+
+
+# logout route
+def user_logout(request):
+    # to be deleted when we can log in
+    user1 = authenticate(request, username='will', password='will')
+    if user1 is not None:
+        login(request, user1)
+    #########
+    logout(request)
+    return JsonResponse({'message': 'User logged out'})
+
+
+# create a new user route
+def new_user(request):
+    # get information from FE
+    user_information = json.loads(request.body)
+    # create user with data
+    User.objects.create_user(
+        username=user_information['name'], email=user_information['email'], password=user_information['password'])
+    return JsonResponse({'message': 'user successfully created'})
