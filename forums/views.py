@@ -8,8 +8,6 @@ import pymongo
 
 # For refreshing server to seed data
 from forums.seeds import thread1, thread2
-# collection_name.drop({})
-# collection_name.insert_many([thread1, thread2])
 
 
 
@@ -18,12 +16,14 @@ my_client = pymongo.MongoClient('mongodb+srv://readherring:readherring@readherri
 db = my_client['readherring']
 
 collection_name = db['Forums']
-
+collection_name.create_index([('title', 'text')], default_language='english')
+# collection_name.drop({})
+# collection_name.insert_many([thread1, thread2])
 
 
 
 # Create your views here.
-def get_create_threads(request):
+def get_threads(request):
     if request.method == 'GET':
         thread_list = []
         data = collection_name.find({})
@@ -70,9 +70,22 @@ def get_by_id(request, id):
             reply = json_data['reply']
             reply_to = json_data['reply_to']
             reply_data = {'username': username, 'reply': reply, 'reply_to': reply_to}
-            collection_name.update_one({'_id': ObjectId(id), "messages.message_id": message_id} ,{'$push':{'messages.$.replies': reply_data}}, upsert=True)
+            collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id} ,{'$push':{'messages.$.replies': reply_data}}, upsert=True)
             return JsonResponse(reply_data, safe=False)
 
+def search_by_title(request):
+    if request.method == 'POST':
+        data = request.body.decode('utf-8')
+        json_data = json.loads(data)
+        query = json_data['query']
+        thread_list = []
+        search = collection_name.find(
+   { '$text': { '$search': query } })
+        for thread in search:
+            thread['id'] = str(thread['_id'])
+            thread.pop('_id', None)
+            thread_list.append(thread)
+        return JsonResponse(thread_list, safe=False)
 
 def not_found_404(request, exception):
     response = {'error': exception}
