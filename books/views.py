@@ -11,7 +11,7 @@ db = my_client['readherring']
 
 collection_name = db['Books']
 
-collection_name.drop({})
+# collection_name.drop({})
 
 book1 = {
     "title": "first book",
@@ -30,7 +30,7 @@ book2 = {
     "num_ratings": 0
 }
 
-collection_name.insert_many([book1, book2])
+# collection_name.insert_many([book1, book2])
 
 
 # Create your views here.

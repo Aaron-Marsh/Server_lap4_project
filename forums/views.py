@@ -12,7 +12,7 @@ db = my_client['readherring']
 
 collection_name = db['Forums']
 
-collection_name.drop({})
+# collection_name.drop({})
 
 thread1 = {
     "title": "Hello Chris! This is the title of a thread",
@@ -100,7 +100,7 @@ thread2 = {
     ]
 }
 
-collection_name.insert_many([thread1, thread2])
+# collection_name.insert_many([thread1, thread2])
 
 # Create your views here.
 def get_create_threads(request):
