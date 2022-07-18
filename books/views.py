@@ -69,9 +69,13 @@ def get_by_ISBN(request, ISBN):
     ISBN_string = str(ISBN)
     if request.method == 'GET':
         book = collection_name.find_one({'ISBN': ISBN_string})
-        book['id'] = str(book['_id'])
-        book.pop('_id', None)
-        return JsonResponse(book, safe=False)
+        if book == None:
+            return HttpResponse(f'Could not find book with ISBN: {ISBN_string}')
+        else:
+            book['id'] = str(book['_id'])
+            book.pop('_id', None)
+            return JsonResponse(book, safe=False)
+       
     elif request.method == 'PATCH':
         body = request.body.decode('utf-8')
         json_data = json.loads(body)
@@ -99,7 +103,10 @@ def get_by_ISBN(request, ISBN):
 def get_books_from_api(request):
     body = request.body.decode('utf-8')
     j_body = json.loads(body)
-    response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={j_body.get('query_type', '')}:{j_body['query']}&max_results={j_body.get('num_results', '5')}")
+    query_type = j_body.get('query_type', '')
+    query = j_body['query']
+    num_results = j_body.get('num_results', '5')
+    response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={query_type}:{query}&max_results={num_results}")
     json_res = response.json()
     books = []
     for book in json_res["items"]:
