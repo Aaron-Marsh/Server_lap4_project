@@ -61,8 +61,9 @@ def get_by_id(request, id):
             username = json_data['username']
             message = json_data['message']
             message_id = str(uuid.uuid4())
-            collection_name.update_one({'_id': ObjectId(id)},{'$push':{'messages': {'message_id': message_id, 'username': username, 'message': message, 'replies': [] }}}, upsert=True)
-            return HttpResponse('New Message Added To Thread!')
+            message_data = {'message_id': message_id, 'username': username, 'message': message, 'replies': [] }
+            collection_name.update_one({'_id': ObjectId(id)},{'$push':{'messages': message_data}}, upsert=True)
+            return JsonResponse(message_data, safe=False)
         elif json_data['method'] == 'reply_message':
             message_id = json_data['message_id']
             username = json_data['username']
