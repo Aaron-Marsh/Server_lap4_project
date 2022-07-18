@@ -10,6 +10,7 @@ dnspython = "*"
 django-cors-headers = "*"
 requests = "*"
 gunicorn = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
