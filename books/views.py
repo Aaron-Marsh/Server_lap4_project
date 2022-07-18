@@ -35,44 +35,47 @@ book2 = {
 
 # Create your views here.
 def index(request):
-    return HttpResponse("<h1>Hello and welcome to my first <u>Django App</u> project!</h1>")
+    return HttpResponse("<h1>This is the backend of Read Herring!</h1>")
 
 def get_create_books(request):
     if request.method == 'GET':
-        book_list = []
-        data = collection_name.find({})
-        for book in data:
+        try:
+            book_list = []
+            data = collection_name.find({})
+            for book in data:
+                book['id'] = str(book['_id'])
+                book.pop('_id', None)
+                book_list.append(book)
+            return JsonResponse(book_list, safe=False)
+        except TypeError:
+            return HttpResponse('Could not find any books in the database')
+    elif request.method == 'POST':
+        try:
+            data = request.body.decode('utf-8')
+            json_data = json.loads(data)
+            title = json_data['title']
+            author = json_data['author']
+            ISBN = json_data['ISBN']
+            collection_name.insert_one({"title": title,"author": author,"ISBN": ISBN, "reviews": []})
+            book = collection_name.find_one({'ISBN': ISBN})
             book['id'] = str(book['_id'])
             book.pop('_id', None)
-            book_list.append(book)
-        return JsonResponse(book_list, safe=False)
-    elif request.method == 'POST':
-        data = request.body.decode('utf-8')
-        json_data = json.loads(data)
-        title = json_data['title']
-        author = json_data['author']
-        ISBN = json_data['ISBN']
-        collection_name.insert_one({"title": title,"author": author,"ISBN": ISBN, "reviews": []})
-        book = collection_name.find_one({'ISBN': ISBN})
-        book['id'] = str(book['_id'])
-        book.pop('_id', None)
-        return JsonResponse(book, safe=False)
+            return JsonResponse(book, safe=False)
+        except KeyError:
+            return HttpResponse('Invalid post, check request.body')
     else:
-        print('error')
+        return HttpResponse('Only GET and POST requests allowed')
 
 def get_by_ISBN(request, ISBN):
     ISBN_string = str(ISBN)
     if request.method == 'GET':
         try:
             book = collection_name.find_one({'ISBN': ISBN_string})
-        # if book == None:
-            # return HttpResponse(f'Could not find book with ISBN: {ISBN_string}')
-        # else:
             book['id'] = str(book['_id'])
             book.pop('_id', None)
             return JsonResponse(book, safe=False)
         except TypeError:
-            return HttpResponse(f'Could not find book with ISBN: {ISBN_string}')
+            return HttpResponse(f'Could not find book with ISBN: {ISBN_string} in database')
        
     elif request.method == 'PATCH':
         body = request.body.decode('utf-8')
@@ -97,34 +100,39 @@ def get_by_ISBN(request, ISBN):
             collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
             db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$inc':{'has_read.$.personal_rating': personal_rating}})
             return HttpResponse(f'Rating Updated in Database for {username}')
+    else:
+        return HttpResponse('Only GET and PATCH requests allowed')
 
 def get_books_from_api(request):
-    body = request.body.decode('utf-8')
-    j_body = json.loads(body)
-    query_type = j_body.get('query_type', '')
-    query = j_body['query']
-    num_results = j_body.get('num_results', '5')
-    response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={query_type}:{query}&max_results={num_results}")
-    json_res = response.json()
-    books = []
-    for book in json_res["items"]:
-        ISBN = book['volumeInfo']['industryIdentifiers'][0]['identifier']
-        collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
-        our_book = collection_name.find_one({'ISBN': ISBN})
-        combined_book = {
-            'title': book.get('volumeInfo',{}).get('title', 'Title Not Found'),
-            'author': book.get('volumeInfo',{}).get('authors', 'Author Not Found'),
-            'ISBN': ISBN,
-            'publisher': book.get('volumeInfo',{}).get('publisher', 'Publisher Not Found'),
-            'publishedDate': book.get('volumeInfo',{}).get('publishedDate', 'Published Date Not Found'),
-            'description': book.get('volumeInfo',{}).get('description', 'Description Not Found'),
-            'images': book.get('volumeInfo',{}).get('imageLinks', 'No Image Found'),
-            'reviews': our_book.get('reviews', []),
-            'rating': our_book.get('rating', 0),
-            'num_ratings': our_book.get('num_ratings', 0)
-        }
-        books.append(combined_book)
-    return JsonResponse(books, safe=False)
+    if request.method == 'POST':
+        body = request.body.decode('utf-8')
+        j_body = json.loads(body)
+        query_type = j_body.get('query_type', 'intitle')
+        query = j_body.get('query', 'Harry Potter')
+        num_results = j_body.get('num_results', '5')
+        response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={query_type}:{query}&max_results={num_results}")
+        json_res = response.json()
+        books = []
+        for book in json_res["items"]:
+            ISBN = book['volumeInfo']['industryIdentifiers'][0]['identifier']
+            collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
+            our_book = collection_name.find_one({'ISBN': ISBN})
+            combined_book = {
+                'title': book.get('volumeInfo',{}).get('title', 'Title Not Found'),
+                'author': book.get('volumeInfo',{}).get('authors', 'Author Not Found'),
+                'ISBN': ISBN,
+                'publisher': book.get('volumeInfo',{}).get('publisher', 'Publisher Not Found'),
+                'publishedDate': book.get('volumeInfo',{}).get('publishedDate', 'Published Date Not Found'),
+                'description': book.get('volumeInfo',{}).get('description', 'Description Not Found'),
+                'images': book.get('volumeInfo',{}).get('imageLinks', 'No Image Found'),
+                'reviews': our_book.get('reviews', []),
+                'rating': our_book.get('rating', 0),
+                'num_ratings': our_book.get('num_ratings', 0)
+            }
+            books.append(combined_book)
+        return JsonResponse(books, safe=False)
+    else:
+        return HttpResponse('Only POST requests allowed')
 
 def not_found_404(request, exception):
     response = {'error': exception}
