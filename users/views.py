@@ -43,6 +43,7 @@ def get_users(request):
         for user in data:
             user['id'] = str(user['_id'])
             user.pop('_id', None)
+            user.pop('password', None)
             user_list.append(user)
         return JsonResponse(user_list, safe=False)
     # elif request.method == 'POST':
@@ -65,6 +66,7 @@ def get_by_username(request, username):
         else:
             user['id'] = str(user['_id'])
             user.pop('_id', None)
+            user.pop('password', None)
             return JsonResponse(user, safe=False)
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
@@ -99,7 +101,8 @@ def register(request):
     else:
         password = json_data['password']
         hashed_password = make_password(password)
-        collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email})
+        about_me = "This is where I can write a little something about myself!"
+        collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email, 'about_me': about_me, 'has_read':[]})
         response = {'msg': 'You have successfully created a new account. Try to Login!'}
         return JsonResponse(response, safe=False)
 
