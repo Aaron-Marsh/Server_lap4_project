@@ -25,7 +25,15 @@ collection_name = db['Users']
 
 user1 = {
     'username': 'user1',
-    'password': 'pass'
+    'password': 'pass',
+    'about_me': 'I really like to read so I use read herring to keep track of all the books I want to read. I also enjoy sharing the books I thought were great and seeing other people\'s thought\'s about them too',
+    'has_read': [
+        {'ISBN': '9781408855898', 'title': "Harry Potter and the Philosopher's Stone", 'author': "J. K. Rowling", 'favourited': True, 'personal_rating': 4 }
+        ],
+    'wants_to_read': [
+        {'ISBN': '12345', 'title': 'Example title', 'author': 'The author'}
+        ]
+
 }
 user2 = {
     'username': 'user2',
