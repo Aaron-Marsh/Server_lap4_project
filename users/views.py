@@ -83,6 +83,17 @@ def get_by_username(request, username):
             set_favourited = json_data['set_favourited']
             collection_name.update_one({'username': username, "has_read.ISBN": ISBN} ,{'$set':{'has_read.$.favourited': set_favourited}}, upsert=True)
             return HttpResponse(f'Book with ISBN: {ISBN} has favourite status set to {set_favourited} for {username}!')
+        elif json_data['method'] == 'add_to_wants_to_read':
+            ISBN = json_data['ISBN']
+            title = json_data['title']
+            author = json_data['author']
+            collection_name.update_one({'username': username},{'$push':{'wants_to_read': {'ISBN': ISBN, 'title': title, 'author': author}}}, upsert=True)
+            return HttpResponse(f'New book with ISBN: {ISBN} added to wants to read for {username}!')
+        elif json_data['method'] == 'edit_about_me':
+            about_me = json_data['about_me']
+            collection_name.update_one({'username': username} ,{'$set':{'about_me': about_me}}, upsert=True)
+            return HttpResponse(f'About Me updated for {username}!')
+
 
 
 def register(request):
@@ -102,7 +113,7 @@ def register(request):
         password = json_data['password']
         hashed_password = make_password(password)
         about_me = "This is where I can write a little something about myself!"
-        collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email, 'about_me': about_me, 'has_read':[]})
+        collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email, 'about_me': about_me, 'has_read':[], 'wants_to_read':[]})
         response = {'msg': 'You have successfully created a new account. Try to Login!'}
         return JsonResponse(response, safe=False)
 
