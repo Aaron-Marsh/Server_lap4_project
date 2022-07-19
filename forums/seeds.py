@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 
 thread1 = {
     "title": "Hello Chris! This is the title of a thread",
@@ -55,6 +56,7 @@ thread1 = {
     ]
 }
 thread2 = {
+    "_id": ObjectId('62d739a2f981c7f9185af9b2'),
     "title": "A second thread",
     "username": "user1",
     "first_message": "What an original message this is",

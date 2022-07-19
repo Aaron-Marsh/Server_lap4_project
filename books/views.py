@@ -1,5 +1,5 @@
 # from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
+from django.http import HttpResponse, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
 from bson.json_util import loads, dumps
 import json
 import requests
@@ -49,6 +49,7 @@ def get_create_books(request):
             return JsonResponse(book_list, safe=False, status=200)
         except TypeError:
             return HttpResponseNotFound('Could not find any books in the database')
+
     elif request.method == 'POST':
         try:
             data = request.body.decode('utf-8')
@@ -62,9 +63,9 @@ def get_create_books(request):
             book.pop('_id', None)
             return JsonResponse(book, safe=False)
         except KeyError:
-            return HttpResponse('Invalid post, check request.body', status=400)
+            return HttpResponseBadRequest('Invalid post, check request.body')
     else:
-        return HttpResponse('Only GET and POST requests allowed', status=400)
+        return HttpResponseBadRequest('Only GET and POST requests allowed')
 
 def get_by_ISBN(request, ISBN):
     ISBN_string = str(ISBN)
@@ -101,7 +102,7 @@ def get_by_ISBN(request, ISBN):
             db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$inc':{'has_read.$.personal_rating': personal_rating}})
             return HttpResponse(status=204)
     else:
-        return HttpResponse('Only GET and PATCH requests allowed', status=400)
+        return HttpResponseBadRequest('Only GET and PATCH requests allowed')
 
 def get_books_from_api(request):
     if request.method == 'POST':
@@ -132,7 +133,7 @@ def get_books_from_api(request):
             books.append(combined_book)
         return JsonResponse(books, safe=False, status=200)
     else:
-        return HttpResponse('Only POST requests allowed', status=400)
+        return HttpResponseBadRequest('Only POST requests allowed')
 
 def not_found_404(request, exception):
     response = {'error': exception}

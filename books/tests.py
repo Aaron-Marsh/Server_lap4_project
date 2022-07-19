@@ -1,6 +1,6 @@
 from django.test import TestCase
 import json
-# Create your tests here.
+
 class TestUrls(TestCase):
 
     def testHomePage(self):
@@ -19,14 +19,13 @@ class TestUrls(TestCase):
         response = self.client.get('/books/12345')
         self.assertEqual(response.status_code, 200)
 
-
     # Test insert review
     def testBooksISBNPagePatchReview(self):
         patch_data = {
             "method": "add_review",
             "username": "user",
             "review":"This was good"
-            }
+        }
         j_data = json.dumps(patch_data)
         response = self.client.patch('/books/12345', content_type='application/json', data = j_data)
         self.assertEqual(response.status_code, 204)
@@ -37,7 +36,7 @@ class TestUrls(TestCase):
             "method": "add_rating",
   	        "username": "user1",
   	        "rating": 4
-            }
+        }
         j_data = json.dumps(patch_data)
         response = self.client.patch('/books/12345', content_type='application/json', data = j_data)
         self.assertEqual(response.status_code, 204)
@@ -52,7 +51,7 @@ class TestUrls(TestCase):
             'query_type': 'intitle',
   	        'query': 'harry potter and the philosopher\'s stone',
   	        'num_results': '3'
-            }
+        }
         j_data = json.dumps(post_data)
         response = self.client.post('/books/api/', content_type='application/json', data = j_data)
         self.assertEqual(response.status_code, 200)
