@@ -21,17 +21,21 @@ db = my_client['readherring']
 
 collection_name = db['Users']
 
-# collection_name.drop({})
+collection_name.drop({})
 
 user1 = {
     'username': 'user1',
     'password': 'pass',
     'about_me': 'I really like to read so I use read herring to keep track of all the books I want to read. I also enjoy sharing the books I thought were great and seeing other people\'s thought\'s about them too',
     'has_read': [
-        {'ISBN': '9781408855898', 'title': "Harry Potter and the Philosopher's Stone", 'author': "J. K. Rowling", 'favourited': True, 'personal_rating': 4 }
+        {'ISBN': '9781408855898', 'title': "Harry Potter and the Philosopher's Stone", 'author': "J. K. Rowling", 'favourited': True, 'personal_rating': 4 },
+        {'ISBN': '88888', 'title': "Book number 2", 'author': "Author 2", 'favourited': False, 'personal_rating': 3 },
+        {'ISBN': '99999', 'title': "Third book in has_read", 'author': "An author of note", 'favourited': True, 'personal_rating': 5 },
         ],
     'wants_to_read': [
-        {'ISBN': '12345', 'title': 'Example title', 'author': 'The author'}
+        {'ISBN': '77777', 'title': 'Example title 1', 'author': 'The author 1'},
+        {'ISBN': '12345', 'title': 'Example title 2', 'author': 'The author 2'},
+        {'ISBN': '12345', 'title': 'Example title 3', 'author': 'The author 3'},
         ]
 
 }
@@ -40,7 +44,7 @@ user2 = {
     'password': 'pass'
 }
 
-# collection_name.insert_many([user1, user2])
+collection_name.insert_many([user1, user2])
 
 
 # Create your views here.
