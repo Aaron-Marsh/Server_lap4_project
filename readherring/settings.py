@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'books',
+    'forums',
+    'users',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,7 +48,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -54,6 +56,7 @@ MIDDLEWARE = [
 
 ALLOWED_HOSTS=['*']
 CORS_ORIGIN_ALLOW_ALL = True
+CSRF_TRUSTED_ORIGINS = ['https://hoppscotch.io', 'http://localhost:3000', 'https://read-herring.netlify.app']
 
 
 ROOT_URLCONF = 'readherring.urls'
@@ -86,10 +89,22 @@ WSGI_APPLICATION = 'readherring.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'readherringsql',
+#         'USER': 'postgres',
+#         'PASSWORD': 'willwill',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
+# import mongoengine
+# mongoengine.connect(db='readherring', host='mongodb+srv://readherring:readherring@readherring.qlngl1v.mongodb.net/?retryWrites=true&w=majority', username='readherring', password='readherring')
 
 AUTH_PASSWORD_VALIDATORS = [
     {
