@@ -60,16 +60,24 @@ def get_by_id(request, id):
         if json_data['method'] == 'thread_message':
             username = json_data['username']
             message = json_data['message']
-            message_id = str(uuid.uuid4())
-            message_data = {'message_id': message_id, 'username': username, 'message': message, 'replies': [] }
-            collection_name.update_one({'_id': ObjectId(id)},{'$push':{'messages': message_data}}, upsert=True)
-            return JsonResponse(message_data, safe=False)
+            message_id = json_data.get('message_id', None)
+            if message_id == None:
+                message_id = str(uuid.uuid4())
+                message_data = {'message_id': message_id, 'username': username, 'message': message, 'replies': [] }
+                collection_name.update_one({'_id': ObjectId(id)},{'$push':{'messages': message_data}}, upsert=True)
+                return JsonResponse(message_data, safe=False)
+            else:
+                message_data = {'message_id': message_id, 'username': username, 'message': message, 'replies': [] }
+                collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.message': message}})
+                return JsonResponse(message_data, safe=False)
+
         elif json_data['method'] == 'reply_message':
             message_id = json_data['message_id']
             username = json_data['username']
             reply = json_data['reply']
             reply_to = json_data['reply_to']
-            reply_data = {'username': username, 'reply': reply, 'reply_to': reply_to}
+            reply_id = json_data.get('reply_id', str(uuid.uuid4()))
+            reply_data = {'reply_id': reply_id, 'username': username, 'reply': reply, 'reply_to': reply_to}
             collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id} ,{'$push':{'messages.$.replies': reply_data}}, upsert=True)
             return JsonResponse(reply_data, safe=False)
 
