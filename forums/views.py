@@ -45,7 +45,6 @@ def get_threads(request):
         print('error')
 
 def get_by_id(request, id):
-    # id_string = str(id)
     if request.method == 'GET':
         thread = collection_name.find_one({"_id": ObjectId(id)})
         if thread == None:
@@ -76,10 +75,28 @@ def get_by_id(request, id):
             username = json_data['username']
             reply = json_data['reply']
             reply_to = json_data['reply_to']
-            reply_id = json_data.get('reply_id', str(uuid.uuid4()))
-            reply_data = {'reply_id': reply_id, 'username': username, 'reply': reply, 'reply_to': reply_to}
-            collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id} ,{'$push':{'messages.$.replies': reply_data}}, upsert=True)
-            return JsonResponse(reply_data, safe=False)
+            reply_id = json_data.get('reply_id', None)
+            if reply_id == None:
+                reply_id = str(uuid.uuid4())
+                reply_data = {'reply_id': reply_id, 'username': username, 'reply': reply, 'reply_to': reply_to}
+                collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id} ,{'$push':{'messages.$.replies': reply_data}}, upsert=True)
+                return JsonResponse(reply_data, safe=False)
+            else:
+                reply_data = {'reply_id': reply_id, 'username': username, 'reply': reply, 'reply_to': reply_to}
+                data = collection_name.find_one({'messages.replies.reply_id': reply_id})
+                messages = data['messages']
+                for message in messages:
+                    reply_was_changed = False
+                    replies = message['replies']
+                    edited_replies = []
+                    for reply_object in replies:
+                        if reply_object['reply_id'] == reply_id:
+                            reply_object['reply'] = reply
+                            reply_was_changed = True
+                        edited_replies.append(reply_object)
+                    if reply_was_changed == True:
+                        collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.replies': edited_replies}})
+                return JsonResponse(reply_data, safe=False)
 
 def search_by_title(request):
     if request.method == 'POST':
