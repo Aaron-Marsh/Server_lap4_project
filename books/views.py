@@ -1,5 +1,5 @@
 # from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseNotFound
 from bson.json_util import loads, dumps
 import json
 import requests
@@ -46,9 +46,9 @@ def get_create_books(request):
                 book['id'] = str(book['_id'])
                 book.pop('_id', None)
                 book_list.append(book)
-            return JsonResponse(book_list, safe=False)
+            return JsonResponse(book_list, safe=False, status=200)
         except TypeError:
-            return HttpResponse('Could not find any books in the database')
+            return HttpResponseNotFound('Could not find any books in the database')
     elif request.method == 'POST':
         try:
             data = request.body.decode('utf-8')
@@ -62,9 +62,9 @@ def get_create_books(request):
             book.pop('_id', None)
             return JsonResponse(book, safe=False)
         except KeyError:
-            return HttpResponse('Invalid post, check request.body')
+            return HttpResponse('Invalid post, check request.body', status=400)
     else:
-        return HttpResponse('Only GET and POST requests allowed')
+        return HttpResponse('Only GET and POST requests allowed', status=400)
 
 def get_by_ISBN(request, ISBN):
     ISBN_string = str(ISBN)
@@ -75,7 +75,7 @@ def get_by_ISBN(request, ISBN):
             book.pop('_id', None)
             return JsonResponse(book, safe=False)
         except TypeError:
-            return HttpResponse(f'Could not find book with ISBN: {ISBN_string} in database')
+            return HttpResponseNotFound(f'Could not find book with ISBN: {ISBN_string} in database')
        
     elif request.method == 'PATCH':
         body = request.body.decode('utf-8')
@@ -84,7 +84,7 @@ def get_by_ISBN(request, ISBN):
             username = json_data['username']
             review = json_data['review']
             collection_name.update_one({'ISBN': ISBN_string},{'$push':{'reviews': {'username': username, 'review': review}}}, upsert=True)
-            return HttpResponse('Review Added to Database')
+            return HttpResponse(status=204)
         elif json_data['method'] == 'add_rating':
             collection_name.update_one({'ISBN': ISBN_string},{'$inc':{'rating': 0, 'num_ratings': 0}}, upsert=True)
             book = collection_name.find_one({'ISBN': ISBN_string})
@@ -99,9 +99,9 @@ def get_by_ISBN(request, ISBN):
             username = json_data['username']
             collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
             db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$inc':{'has_read.$.personal_rating': personal_rating}})
-            return HttpResponse(f'Rating Updated in Database for {username}')
+            return HttpResponse(status=204)
     else:
-        return HttpResponse('Only GET and PATCH requests allowed')
+        return HttpResponse('Only GET and PATCH requests allowed', status=400)
 
 def get_books_from_api(request):
     if request.method == 'POST':
@@ -130,9 +130,9 @@ def get_books_from_api(request):
                 'num_ratings': our_book.get('num_ratings', 0)
             }
             books.append(combined_book)
-        return JsonResponse(books, safe=False)
+        return JsonResponse(books, safe=False, status=200)
     else:
-        return HttpResponse('Only POST requests allowed')
+        return HttpResponse('Only POST requests allowed', status=400)
 
 def not_found_404(request, exception):
     response = {'error': exception}
