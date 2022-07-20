@@ -17,6 +17,7 @@ db = my_client['readherring']
 
 collection_name = db['Forums']
 collection_name.create_index([('title', 'text')], default_language='english')
+
 # collection_name.drop({})
 # collection_name.insert_many([thread1, thread2])
 

@@ -11,10 +11,8 @@ db = my_client['readherring']
 collection_name = db['Books']
 
 from books.seeds import book_seeds
-collection_name.drop({})
-
-
-collection_name.insert_many(book_seeds)
+# collection_name.drop({})
+# collection_name.insert_many(book_seeds)
 
 
 # Create your views here.
