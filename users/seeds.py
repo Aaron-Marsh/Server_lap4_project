@@ -4,13 +4,13 @@ user1 = {
     'about_me': 'I really like to read so I use read herring to keep track of all the books I want to read. I also enjoy sharing the books I thought were great and seeing other people\'s thought\'s about them too',
     'has_read': [
         {'ISBN': '9781408855898', 'title': "Harry Potter and the Philosopher's Stone", 'author': "J. K. Rowling", 'favourited': True,
-        # 'personal_rating': 4
+        'personal_rating': 4
          },
         {'ISBN': '88888', 'title': "Book number 2", 'author': "Author 2", 'favourited': False,
-        # 'personal_rating': 3
+        'personal_rating': 3
         },
         {'ISBN': '99999', 'title': "Third book in has_read", 'author': "An author of note", 'favourited': True,
-        # 'personal_rating': 5
+        'personal_rating': 5
         },
         ],
     'wants_to_read': [

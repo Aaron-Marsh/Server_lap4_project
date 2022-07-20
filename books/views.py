@@ -84,10 +84,27 @@ def get_by_ISBN(request, ISBN):
             # collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
             # db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$inc':{'has_read.$.personal_rating': personal_rating}})
             username = json_data['username']
-            rating_object = {'username': username, 'rating': json_data['rating']}
-            collection_name.update_one({'ISBN': ISBN_string}, {'$pull': {'ratings':{'username':username}}}, upsert=True)
-            collection_name.update_one({'ISBN': ISBN_string}, {'$push': {'ratings': rating_object}}, upsert=True)
-            return HttpResponse(status=204)
+            old_rating = json_data['old_rating']
+            new_rating = json_data['new_rating']
+            book = collection_name.find_one({'ISBN': ISBN_string})
+            original_average_rating = book['rating']
+            original_num_ratings = book['num_ratings']
+            collection_name.update_one({'ISBN': ISBN_string},{'$inc':{'rating': 0, 'num_ratings': 0}}, upsert=True)
+            if old_rating == 0:
+                new_num_ratings = original_num_ratings + 1
+                new_average_rating = (original_average_rating * original_num_ratings + new_rating) / new_num_ratings
+            elif new_rating == 0:
+                new_num_ratings = original_num_ratings - 1
+                new_average_rating = (original_average_rating * original_num_ratings - old_rating) / new_num_ratings
+            else:
+                new_num_ratings = original_num_ratings
+                new_average_rating = (original_average_rating * original_num_ratings + new_rating - old_rating) / new_num_ratings
+            collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
+            db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$set':{'has_read.$.personal_rating': new_rating}})
+            # collection_name.update_one({'ISBN': ISBN_string}, {'$pull': {'ratings':{'username':username}}}, upsert=True)
+            # collection_name.update_one({'ISBN': ISBN_string}, {'$push': {'ratings': rating_object}}, upsert=True)
+            response = {'personal_rating': new_rating, 'rating': new_average_rating, 'num_ratings': new_num_ratings}
+            return JsonResponse(response, status=200)
         elif json_data['method'] == 'remove_rating':
             username = json_data['username']
             collection_name.update_one({'ISBN': ISBN_string}, {'$pull': {'ratings':{'username':username}}}, upsert=True)
@@ -108,7 +125,7 @@ def get_books_from_api(request):
         for book in json_res["items"]:
             book_data = book.get('volumeInfo', {})
             ISBN = book_data['industryIdentifiers'][0]['identifier']
-            collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}, 'ratings':[],'reviews':[]}, upsert=True)
+            collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
             our_book = collection_name.find_one({'ISBN': ISBN})
             combined_book = {
                 'title': book_data.get('title', 'Title Not Found'),

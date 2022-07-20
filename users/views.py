@@ -22,8 +22,8 @@ db = my_client['readherring']
 collection_name = db['Users']
 
 from users.seeds import user1, user2
-collection_name.drop({})
-collection_name.insert_many([user1, user2])
+# collection_name.drop({})
+# collection_name.insert_many([user1, user2])
 
 
 # Create your views here.
@@ -64,7 +64,7 @@ def get_by_username(request, username):
             title = json_data['title']
             author = json_data['author']
             has_read_data = {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False,
-            # 'personal_rating': 0
+            'personal_rating': 0
             }
             collection_name.update_one({'username': username},{'$push':{'has_read': has_read_data}}, upsert=True)
             collection_name.update_one({'username': username}, {'$pull': { 'wants_to_read' : { 'ISBN': ISBN}}})
