@@ -8,29 +8,13 @@ import pymongo
 my_client = pymongo.MongoClient('mongodb+srv://readherring:readherring@readherring.qlngl1v.mongodb.net/?retryWrites=true&w=majority')
 
 db = my_client['readherring']
-
 collection_name = db['Books']
 
-# collection_name.drop({})
+from books.seeds import book_seeds
+collection_name.drop({})
 
-book1 = {
-    "title": "first book",
-    "author": "first author",
-    "ISBN": "12345",
-    "reviews": [],
-    "rating": 0,
-    "num_ratings": 0
-}
-book2 = {
-    "title": "second title",
-    "author" : "second author",
-    "ISBN": "54321",
-    "reviews": [],
-    "rating": 0,
-    "num_ratings": 0
-}
 
-# collection_name.insert_many([book1, book2])
+collection_name.insert_many(book_seeds)
 
 
 # Create your views here.
