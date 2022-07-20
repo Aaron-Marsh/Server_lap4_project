@@ -73,7 +73,8 @@ def get_by_username(request, username):
             # user.pop('password', None)
             return JsonResponse(user, safe=False, status=200)
         except TypeError:
-            return HttpResponseNotFound(f'Could not find user with username: {username} in database')
+            response = {'error': f'Could not find user with username: {username} in database'}
+            return JsonResponse(response, safe=False, status=404)
 
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
