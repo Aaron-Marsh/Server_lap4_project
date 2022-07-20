@@ -85,6 +85,10 @@ def get_by_username(request, username):
             author = json_data['author']
             collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False, 'personal_rating': 0 }}}, upsert=True)
             return HttpResponse(status=204)
+        elif json_data['method'] == 'remove_from_read':
+            ISBN = json_data['ISBN']
+            collection_name.update_one({'username': username}, {'$pull': { "has_read" : { 'ISBN': ISBN}}})
+            return HttpResponse(status=204)
         elif json_data['method'] == 'edit_favourite_status':
             ISBN = json_data['ISBN']
             set_favourited = json_data['set_favourited']
@@ -96,10 +100,15 @@ def get_by_username(request, username):
             author = json_data['author']
             collection_name.update_one({'username': username},{'$push':{'wants_to_read': {'ISBN': ISBN, 'title': title, 'author': author}}}, upsert=True)
             return HttpResponse(status=204)
+        elif json_data['method'] == 'remove_from_wants_to_read':
+            ISBN = json_data['ISBN']
+            collection_name.update_one({'username': username}, {'$pull': { 'wants_to_read' : { 'ISBN': ISBN}}})
+            return HttpResponse(status=204)
         elif json_data['method'] == 'edit_about_me':
             about_me = json_data['about_me']
             collection_name.update_one({'username': username} ,{'$set':{'about_me': about_me}}, upsert=True)
             return HttpResponse(status=204)
+        
     else:
         return HttpResponseBadRequest('Only GET and PATCH requests allowed')
 
@@ -157,48 +166,4 @@ def not_found_404(request, exception):
 def server_error_500(request):
     response = {'error': '500 Error'}
     return JsonResponse(response, safe=False)
-
-
-
-# def user_login(request):
-#     # gets response from FE
-#     user_information = json.loads(request.body)
-#     email = user_information['email']
-#     password = user_information['password']
-#     username = User.objects.get(email=email.lower()).username
-#     # authenticate user
-#     user = authenticate(request, username=username, password=password)
-#     # check user exists
-#     if user is not None:
-#         login(request, user)
-#         return JsonResponse({'message': 'login successful'})
-#     else:
-#         return JsonResponse({'error': 'login unsuccessful'})
-
-
-# # logout route
-# def user_logout(request):
-#     # to be deleted when we can log in
-#     user1 = authenticate(request, username='will', password='will')
-#     if user1 is not None:
-#         login(request, user1)
-#     #########
-#     logout(request)
-#     return JsonResponse({'message': 'User logged out'})
-
-
-# # create a new user route
-# def new_user(request):
-#     # get information from FE
-#     # user_information = json.loads(request.body)
-#     user_information = {
-#         'name': 'William',
-#         'email': 'w@g.com',
-#         'password': 'password',
-#     }
-#     # create user with data
-#     User.objects.create_user(
-#         username=user_information['name'], email=user_information['email'], password=user_information['password'])
-#     return JsonResponse({'message': 'user successfully created'})
-
 
