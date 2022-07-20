@@ -81,9 +81,12 @@ def get_by_id(request, id):
                 return JsonResponse(message_data, safe=False, status=200)
     
         elif json_data['method'] == 'delete_message':
-            message_id = json_data['message_id']
-            collection_name.update_one({'_id': ObjectId(id)}, {'$pull': { "messages" : { 'message_id': message_id}}})
-            return HttpResponse(status=204)
+            try:
+                message_id = json_data['message_id']
+                collection_name.update_one({'_id': ObjectId(id)}, {'$pull': { "messages" : { 'message_id': message_id}}})
+                return HttpResponse(status=204)
+            except TypeError:
+                return HttpResponseNotFound(f'Could not find message with message_id: {message_id} to delete')
 
         
         elif json_data['method'] == 'reply_message':
@@ -114,32 +117,34 @@ def get_by_id(request, id):
                         edited_replies.append(reply_object)
                     if reply_was_changed == True:
                         collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.replies': edited_replies}})
-                return JsonResponse(reply_data, safe=False, status=200)
+                        return JsonResponse(reply_data, safe=False, status=200)
+                return TypeError('Could not find reply to delete')
         elif json_data['method'] == 'delete_reply':
-            message_id = json_data['message_id']
-            reply_id = json_data['reply_id']
-            our_data = collection_name.find_one({'messages.replies.reply_id': reply_id})
-            messages = our_data['messages']
-            print(messages)
-            print('------------------')
-            for message in messages:
-                print(message)
-                reply_was_changed = False
-                replies = message['replies']
+            try:
+                message_id = json_data['message_id']
+                reply_id = json_data['reply_id']
+                our_data = collection_name.find_one({'messages.replies.reply_id': reply_id})
+                messages = our_data['messages']
+                print(messages)
+                print('------------------')
+                for message in messages:
+                    print(message)
+                    reply_was_changed = False
+                    replies = message['replies']
 
-                edited_replies = []
-                for reply_object in replies:
-                    if reply_object['reply_id'] != reply_id:
-                        edited_replies.append(reply_object)
-                        print('*********************')
-                    else:
-                        print('!!!!!!!!!!!!!!!!!!!!')
-                        reply_was_changed = True
-                if reply_was_changed == True:
-                    collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.replies': edited_replies}})
-                return HttpResponse(status=204)
-
-
+                    edited_replies = []
+                    for reply_object in replies:
+                        if reply_object['reply_id'] != reply_id:
+                            edited_replies.append(reply_object)
+                            print('*********************')
+                        else:
+                            print('!!!!!!!!!!!!!!!!!!!!')
+                            reply_was_changed = True
+                    if reply_was_changed == True:
+                        collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.replies': edited_replies}})
+                        return HttpResponse(status=204)
+            except:
+                return HttpResponseNotFound(f'Could not find reply with reply_id: {reply_id} to delete')
     else:
         return HttpResponseBadRequest('Only GET and PATCH requests allowed')
 
