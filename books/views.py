@@ -129,11 +129,10 @@ def get_books_from_api(request):
                 'images': book_data.get('imageLinks', 'No Image Found'),
                 'reviews': our_book.get('reviews', []),
                 'rating': our_book.get('rating', 0),
-                'num_ratings': our_book.get('num_ratings', 0),
-                'google_ratings': book_data.get('ratingsCount', 0)
+                'num_ratings': our_book.get('num_ratings', 0)
             }
             books.append(combined_book)
-        sorted_books = sorted(books, key = lambda x: x['google_ratings'], reverse=True)
+        sorted_books = sorted(books, key = lambda x: x['num_ratings'], reverse=True)
 
         return JsonResponse(sorted_books, safe=False, status=200)
     else:
