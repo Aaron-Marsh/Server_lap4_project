@@ -11,6 +11,7 @@ django-cors-headers = "*"
 requests = "*"
 gunicorn = "*"
 psycopg2-binary = "*"
+coverage = "*"
 
 [dev-packages]
 
@@ -18,4 +19,6 @@ psycopg2-binary = "*"
 python_version = "3.10"
 
 [scripts]
-start = "python manage.py runserver"
+start ="python manage.py runserver"
+test ="python manage.py test"
+coverage="bash -c 'coverage run manage.py test && coverage report'"
