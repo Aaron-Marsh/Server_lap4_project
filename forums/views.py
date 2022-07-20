@@ -118,7 +118,7 @@ def get_by_id(request, id):
                     if reply_was_changed == True:
                         collection_name.update_one({'_id': ObjectId(id), 'messages.replies.reply_id': reply_id},{'$set':{'messages.$.replies': edited_replies}})
                         return JsonResponse(reply_data, safe=False, status=200)
-                return TypeError('Could not find reply to delete')
+                return TypeError(f'Could not find reply with reply_id: {reply_id} to delete')
         elif json_data['method'] == 'delete_reply':
             try:
                 reply_id = json_data['reply_id']
