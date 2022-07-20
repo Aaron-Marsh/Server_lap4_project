@@ -120,7 +120,10 @@ def get_by_id(request, id):
             reply_id = json_data['reply_id']
             our_data = collection_name.find_one({'messages.replies.reply_id': reply_id})
             messages = our_data['messages']
+            print(messages)
+            print('------------------')
             for message in messages:
+                print(message)
                 reply_was_changed = False
                 replies = message['replies']
 

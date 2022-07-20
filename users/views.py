@@ -74,7 +74,7 @@ def get_by_username(request, username):
             return JsonResponse(user, safe=False, status=200)
         except TypeError:
             response = {'error': f'Could not find user with username: {username} in database'}
-            return JsonResponse(response, safe=False, status=404)
+            return JsonResponse(response, safe=False, status=200) # 200 as returning this error to display
 
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
