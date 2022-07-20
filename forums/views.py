@@ -136,9 +136,7 @@ def get_by_id(request, id):
                     for reply_object in replies:
                         if reply_object['reply_id'] != reply_id:
                             edited_replies.append(reply_object)
-                            print('*********************')
                         else:
-                            print('!!!!!!!!!!!!!!!!!!!!')
                             reply_was_changed = True
                     if reply_was_changed == True:
                         collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.replies': edited_replies}})

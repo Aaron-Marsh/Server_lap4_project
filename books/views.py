@@ -115,23 +115,27 @@ def get_books_from_api(request):
         json_res = response.json()
         books = []
         for book in json_res["items"]:
-            ISBN = book['volumeInfo']['industryIdentifiers'][0]['identifier']
+            book_data = book.get('volumeInfo', {})
+            ISBN = book_data['industryIdentifiers'][0]['identifier']
             collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
             our_book = collection_name.find_one({'ISBN': ISBN})
             combined_book = {
-                'title': book.get('volumeInfo',{}).get('title', 'Title Not Found'),
-                'author': book.get('volumeInfo',{}).get('authors', 'Author Not Found'),
+                'title': book_data.get('title', 'Title Not Found'),
+                'author': book_data.get('authors', 'Author Not Found'),
                 'ISBN': ISBN,
-                'publisher': book.get('volumeInfo',{}).get('publisher', 'Publisher Not Found'),
-                'publishedDate': book.get('volumeInfo',{}).get('publishedDate', 'Published Date Not Found'),
-                'description': book.get('volumeInfo',{}).get('description', 'Description Not Found'),
-                'images': book.get('volumeInfo',{}).get('imageLinks', 'No Image Found'),
+                'publisher': book_data.get('publisher', 'Publisher Not Found'),
+                'publishedDate': book_data.get('publishedDate', 'Published Date Not Found'),
+                'description': book_data.get('description', 'Description Not Found'),
+                'images': book_data.get('imageLinks', 'No Image Found'),
                 'reviews': our_book.get('reviews', []),
                 'rating': our_book.get('rating', 0),
-                'num_ratings': our_book.get('num_ratings', 0)
+                'num_ratings': our_book.get('num_ratings', 0),
+                'google_ratings': book_data.get('ratingsCount', 0)
             }
             books.append(combined_book)
-        return JsonResponse(books, safe=False, status=200)
+        sorted_books = sorted(books, key = lambda x: x['google_ratings'], reverse=True)
+
+        return JsonResponse(sorted_books, safe=False, status=200)
     else:
         return HttpResponseBadRequest('Only POST requests allowed')
 
