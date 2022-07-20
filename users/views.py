@@ -84,8 +84,9 @@ def get_by_username(request, username):
             ISBN = json_data['ISBN']
             title = json_data['title']
             author = json_data['author']
-            collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False, 'personal_rating': 0 }}}, upsert=True)
-            return HttpResponse(status=204)
+            has_read_data = {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False, 'personal_rating': 0 }
+            collection_name.update_one({'username': username},{'$push':{'has_read': has_read_data}}, upsert=True)
+            return JsonResponse(has_read_data, status=200)
         elif json_data['method'] == 'remove_from_read':
             ISBN = json_data['ISBN']
             collection_name.update_one({'username': username}, {'$pull': { "has_read" : { 'ISBN': ISBN}}})
@@ -99,8 +100,9 @@ def get_by_username(request, username):
             ISBN = json_data['ISBN']
             title = json_data['title']
             author = json_data['author']
-            collection_name.update_one({'username': username},{'$push':{'wants_to_read': {'ISBN': ISBN, 'title': title, 'author': author}}}, upsert=True)
-            return HttpResponse(status=204)
+            wants_to_read_data = {'wants_to_read': {'ISBN': ISBN, 'title': title, 'author': author}}
+            collection_name.update_one({'username': username},{'$push': wants_to_read_data}, upsert=True)
+            return JsonResponse(wants_to_read_data, status=200)
         elif json_data['method'] == 'remove_from_wants_to_read':
             ISBN = json_data['ISBN']
             collection_name.update_one({'username': username}, {'$pull': { 'wants_to_read' : { 'ISBN': ISBN}}})
