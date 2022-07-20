@@ -111,7 +111,9 @@ def get_books_from_api(request):
         query_type = j_body.get('query_type', 'intitle')
         query = j_body.get('query', 'Harry Potter')
         num_results = j_body.get('num_results', '5')
-        response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={query_type}:{query}&max_results={num_results}")
+        url = f"https://www.googleapis.com/books/v1/volumes?q={query_type}:{query}&max_results={num_results}"
+
+        response = requests.get(url)
         json_res = response.json()
         books = []
         for book in json_res["items"]:
