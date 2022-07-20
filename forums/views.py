@@ -88,16 +88,15 @@ def get_by_id(request, id):
                 return HttpResponse(status=204)
             except TypeError:
                 return HttpResponseNotFound(f'Could not find message with message_id: {message_id} to delete')
-
         
         elif json_data['method'] == 'reply_message':
-            message_id = json_data['message_id']
             username = json_data['username']
             reply = json_data['reply']
             reply_to = json_data['reply_to']
             reply_id = json_data.get('reply_id', None)
             # For creating new reply in thread
             if reply_id == None:
+                message_id = json_data['message_id']
                 reply_id = str(uuid.uuid4())
                 reply_data = {'reply_id': reply_id, 'username': username, 'reply': reply, 'reply_to': reply_to}
                 collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id} ,{'$push':{'messages.$.replies': reply_data}}, upsert=True)
@@ -117,17 +116,14 @@ def get_by_id(request, id):
                             reply_was_changed = True
                         edited_replies.append(reply_object)
                     if reply_was_changed == True:
-                        collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.replies': edited_replies}})
+                        collection_name.update_one({'_id': ObjectId(id), 'messages.replies.reply_id': reply_id},{'$set':{'messages.$.replies': edited_replies}})
                         return JsonResponse(reply_data, safe=False, status=200)
                 return TypeError('Could not find reply to delete')
         elif json_data['method'] == 'delete_reply':
             try:
-                message_id = json_data['message_id']
                 reply_id = json_data['reply_id']
                 our_data = collection_name.find_one({'messages.replies.reply_id': reply_id})
                 messages = our_data['messages']
-                print(messages)
-                print('------------------')
                 for message in messages:
                     print(message)
                     reply_was_changed = False
@@ -140,10 +136,13 @@ def get_by_id(request, id):
                         else:
                             reply_was_changed = True
                     if reply_was_changed == True:
-                        collection_name.update_one({'_id': ObjectId(id), 'messages.message_id': message_id},{'$set':{'messages.$.replies': edited_replies}})
+                        collection_name.update_one({'_id': ObjectId(id), 'messages.replies.reply_id': reply_id},{'$set':{'messages.$.replies': edited_replies}})
                         return HttpResponse(status=204)
             except:
                 return HttpResponseNotFound(f'Could not find reply with reply_id: {reply_id} to delete')
+    elif request.method == 'DELETE':
+        collection_name.delete_one({'_id': ObjectId(id)})
+        return HttpResponse('Thread deleted', status=202)
     else:
         return HttpResponseBadRequest('Only GET and PATCH requests allowed')
 
