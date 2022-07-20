@@ -1,3 +1,10 @@
 from django.test import TestCase
+import json
 
-# Create your tests here.
+class TestUrls(TestCase):
+
+    def testHomePage(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+
+

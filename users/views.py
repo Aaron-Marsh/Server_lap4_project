@@ -58,14 +58,6 @@ def get_users(request):
             user.pop('password', None)
             user_list.append(user)
         return JsonResponse(user_list, safe=False)
-    # elif request.method == 'POST':
-    #     data = request.body.decode('utf-8')
-    #     json_data = json.loads(data)
-    #     title = json_data['title']
-    #     username = json_data['username']
-    #     first_message = json_data['first_message']
-    #     collection_name.insert_one({"title": title,"username": username,"first_message": first_message})
-    #     return HttpResponse('New Thread Created!')
     else:
         print('error')
 
