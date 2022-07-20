@@ -74,7 +74,7 @@ def get_by_ISBN(request, ISBN):
             book = collection_name.find_one({'ISBN': ISBN_string})
             book['id'] = str(book['_id'])
             book.pop('_id', None)
-            return JsonResponse(book, safe=False)
+            return JsonResponse(book, safe=False, status=200)
         except TypeError:
             return HttpResponseNotFound(f'Could not find book with ISBN: {ISBN_string} in database')
        

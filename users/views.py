@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
 from bson.json_util import loads, dumps
 from bson.objectid import ObjectId
 from django.contrib.auth import authenticate, login, logout
@@ -25,7 +25,7 @@ collection_name = db['Users']
 
 user1 = {
     'username': 'user1',
-    'password': 'pass',
+    'password': 'pbkdf2_sha256$320000$aeFBJvnVt0q4qbijef8JEO$rwwdSTOGf0KC17FTX60af0qzR/rW9tXEJE5m6Kq1YLM=',
     'about_me': 'I really like to read so I use read herring to keep track of all the books I want to read. I also enjoy sharing the books I thought were great and seeing other people\'s thought\'s about them too',
     'has_read': [
         {'ISBN': '9781408855898', 'title': "Harry Potter and the Philosopher's Stone", 'author': "J. K. Rowling", 'favourited': True, 'personal_rating': 4 },
@@ -50,28 +50,31 @@ user2 = {
 # Create your views here.
 def get_users(request):
     if request.method == 'GET':
-        user_list = []
-        data = collection_name.find({})
-        for user in data:
-            user['id'] = str(user['_id'])
-            user.pop('_id', None)
-            user.pop('password', None)
-            user_list.append(user)
-        return JsonResponse(user_list, safe=False)
+        try:
+            user_list = []
+            data = collection_name.find({})
+            for user in data:
+                user['id'] = str(user['_id'])
+                user.pop('_id', None)
+                user.pop('password', None)
+                user_list.append(user)
+            return JsonResponse(user_list, safe=False)
+        except TypeError:
+            return HttpResponseNotFound('Could not find any users in the database')
     else:
-        print('error')
+        return HttpResponseBadRequest('Only GET requests allowed')
 
 def get_by_username(request, username):
-    # id_string = str(id)
     if request.method == 'GET':
-        user = collection_name.find_one({"username": username})
-        if user == None:
-            return HttpResponse(f'Could not find user with username: {username}')
-        else:
+        try:
+            user = collection_name.find_one({"username": username})
             user['id'] = str(user['_id'])
             user.pop('_id', None)
-            user.pop('password', None)
-            return JsonResponse(user, safe=False)
+            # user.pop('password', None)
+            return JsonResponse(user, safe=False, status=200)
+        except TypeError:
+            return HttpResponseNotFound(f'Could not find user with username: {username} in database')
+
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
@@ -81,23 +84,24 @@ def get_by_username(request, username):
             title = json_data['title']
             author = json_data['author']
             collection_name.update_one({'username': username},{'$push':{'has_read': {'ISBN': ISBN, 'title': title, 'author': author, 'favourited': False, 'personal_rating': 0 }}}, upsert=True)
-            return HttpResponse(f'New book with ISBN: {ISBN} added to read for {username}!')
+            return HttpResponse(status=204)
         elif json_data['method'] == 'edit_favourite_status':
             ISBN = json_data['ISBN']
             set_favourited = json_data['set_favourited']
             collection_name.update_one({'username': username, "has_read.ISBN": ISBN} ,{'$set':{'has_read.$.favourited': set_favourited}}, upsert=True)
-            return HttpResponse(f'Book with ISBN: {ISBN} has favourite status set to {set_favourited} for {username}!')
+            return HttpResponse(status=204)
         elif json_data['method'] == 'add_to_wants_to_read':
             ISBN = json_data['ISBN']
             title = json_data['title']
             author = json_data['author']
             collection_name.update_one({'username': username},{'$push':{'wants_to_read': {'ISBN': ISBN, 'title': title, 'author': author}}}, upsert=True)
-            return HttpResponse(f'New book with ISBN: {ISBN} added to wants to read for {username}!')
+            return HttpResponse(status=204)
         elif json_data['method'] == 'edit_about_me':
             about_me = json_data['about_me']
             collection_name.update_one({'username': username} ,{'$set':{'about_me': about_me}}, upsert=True)
-            return HttpResponse(f'About Me updated for {username}!')
-
+            return HttpResponse(status=204)
+    else:
+        return HttpResponseBadRequest('Only GET and PATCH requests allowed')
 
 
 def register(request):
@@ -109,29 +113,29 @@ def register(request):
     email_exists = collection_name.find_one({'email': email}, {"email" : 1});
     if username_exists != None:
         response = {'error': f'A user already exists with username {username}'}
-        return JsonResponse(response, safe=False)
+        return JsonResponse(response, safe=False, status=409)
     elif email_exists != None:
         response = {'error': f'A user already exists with email {email}'}
-        return JsonResponse(response, safe=False)
+        return JsonResponse(response, safe=False, status=409)
     else:
         password = json_data['password']
         hashed_password = make_password(password)
         about_me = "This is where I can write a little something about myself!"
         collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email, 'about_me': about_me, 'has_read':[], 'wants_to_read':[]})
         response = {'msg': 'You have successfully created a new account. Try to Login!'}
-        return JsonResponse(response, safe=False)
+        return JsonResponse(response, safe=False, status=201)
 
 def login(request):
     data = request.body.decode('utf-8')
     json_data = json.loads(data)
-    user_input = json_data['userInput']
+    user_input = json_data['user_input']
     password = json_data['password']
     db_data = collection_name.find_one({"username": user_input})
     if db_data == None:
         db_data = collection_name.find_one({"email": user_input})
         if db_data == None:
             response = {'error': 'An account with that username / email could not be found'}
-            return JsonResponse(response, safe=False)
+            return JsonResponse(response, safe=False, status=401)
     else:
         db_password = db_data['password']
         check = check_password(password, db_password)
@@ -139,10 +143,10 @@ def login(request):
         db_data.pop('_id', None)
         if check == True:
             db_data.pop('password', None)
-            return JsonResponse(db_data, safe=False)
+            return JsonResponse(db_data, safe=False, status=200)
         else:
             response = {'error': 'Incorrect Password'}
-            return JsonResponse(response, safe=False)
+            return JsonResponse(response, safe=False, status=401)
 
 
 def not_found_404(request, exception):
