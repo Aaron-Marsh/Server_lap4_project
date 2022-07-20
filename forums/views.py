@@ -22,7 +22,6 @@ collection_name.create_index([('title', 'text')], default_language='english')
 # collection_name.insert_many([thread1, thread2])
 
 
-
 # Create your views here.
 def get_threads(request):
     if request.method == 'GET':
@@ -65,7 +64,15 @@ def get_by_id(request, id):
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
-        if json_data['method'] == 'thread_message':
+        if json_data['method'] == 'edit_thread_title':
+            title = json_data['title']
+            collection_name.update_one({'_id': ObjectId(id)},{'$set':{'title': title}}, upsert=True)
+            return HttpResponse(status=204)
+        elif json_data['method'] == 'edit_thread_first_message':
+            first_message = json_data['first_message']
+            collection_name.update_one({'_id': ObjectId(id)},{'$set':{'first_message': first_message}}, upsert=True)
+            return HttpResponse(status=204)
+        elif json_data['method'] == 'thread_message':
             username = json_data['username']
             message = json_data['message']
             message_id = json_data.get('message_id', None)
