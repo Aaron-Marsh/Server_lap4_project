@@ -135,9 +135,9 @@ def get_books_from_api(request):
                 'publishedDate': book_data.get('publishedDate', 'Published Date Not Found'),
                 'description': book_data.get('description', 'Description Not Found'),
                 'images': book_data.get('imageLinks', 'No Image Found'),
-                'reviews': our_book['reviews'],
-                'rating': our_book['rating'],
-                'num_ratings': our_book['num_ratings']
+                'reviews': our_book.get('reviews', []),
+                'rating': our_book.get('rating',0),
+                'num_ratings': our_book.get('num_ratings',0)
             }
             books.append(combined_book)
         sorted_books = sorted(books, key = lambda x: x['num_ratings'], reverse=True)
