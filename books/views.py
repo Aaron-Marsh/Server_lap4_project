@@ -125,25 +125,27 @@ def get_books_from_api(request):
         num_results = j_body.get('num_results', '5')
         response = requests.get(f"https://www.googleapis.com/books/v1/volumes?q={query_type}:{query}&max_results={num_results}")
         json_res = response.json()
+        # print(json_res)
         books = []
         for book in json_res["items"]:
             book_data = book.get('volumeInfo', {})
             ISBN = book_data['industryIdentifiers'][0]['identifier']
-            collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
-            our_book = collection_name.find_one({'ISBN': ISBN})
-            combined_book = {
-                'title': book_data.get('title', 'Title Not Found'),
-                'author': book_data.get('authors', 'Author Not Found'),
-                'ISBN': ISBN,
-                'publisher': book_data.get('publisher', 'Publisher Not Found'),
-                'publishedDate': book_data.get('publishedDate', 'Published Date Not Found'),
-                'description': book_data.get('description', 'Description Not Found'),
-                'images': book_data.get('imageLinks', 'No Image Found'),
-                'reviews': our_book.get('reviews', []),
-                'rating': our_book.get('rating', 0),
-                'num_ratings': our_book.get('num_ratings', 0)
-            }
-            books.append(combined_book)
+            if ISBN != None:
+                collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)
+                our_book = collection_name.find_one({'ISBN': ISBN})
+                combined_book = {
+                    'title': book_data.get('title', 'Title Not Found'),
+                    'author': book_data.get('authors', 'Author Not Found'),
+                    'ISBN': ISBN,
+                    'publisher': book_data.get('publisher', 'Publisher Not Found'),
+                    'publishedDate': book_data.get('publishedDate', 'Published Date Not Found'),
+                    'description': book_data.get('description', 'Description Not Found'),
+                    'images': book_data.get('imageLinks', 'No Image Found'),
+                    'reviews': our_book.get('reviews', []),
+                    'rating': our_book.get('rating', 0),
+                    'num_ratings': our_book.get('num_ratings', 0)
+                }
+                books.append(combined_book)
         # sorted_books = sorted(books, key = lambda x: x['num_ratings'], reverse=True)
 
         return JsonResponse(books, safe=False, status=200)
