@@ -1,3 +1,4 @@
+from curses.ascii import HT
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
 from bson.json_util import loads, dumps
@@ -72,6 +73,16 @@ def get_by_id(request, id):
             first_message = json_data['first_message']
             collection_name.update_one({'_id': ObjectId(id)},{'$set':{'first_message': first_message}}, upsert=True)
             return HttpResponse(status=204)
+        elif json_data['method'] == 'edit_likes':
+            username = json_data['username']
+            if json_data['like_not_unlike'] == True:
+                collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
+                return HttpResponse(status=204)
+            elif json_data['like_not_unlike'] == False:
+                collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
+                return HttpResponse(status=204)
+            else:
+                return HttpResponseBadRequest('Check request body')
         elif json_data['method'] == 'thread_message':
             username = json_data['username']
             message = json_data['message']

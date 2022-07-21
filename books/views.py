@@ -83,6 +83,7 @@ def get_by_ISBN(request, ISBN):
             # username = json_data['username']
             # collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
             # db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$inc':{'has_read.$.personal_rating': personal_rating}})
+            collection_name.update_one({'ISBN': ISBN_string},{'$inc':{'rating': 0, 'num_ratings': 0}}, upsert=True)
             username = json_data['username']
             old_rating = json_data['old_rating']
             new_rating = json_data['new_rating']
@@ -99,15 +100,15 @@ def get_by_ISBN(request, ISBN):
             else:
                 new_num_ratings = original_num_ratings
                 new_average_rating = (original_average_rating * original_num_ratings + new_rating - old_rating) / new_num_ratings
-            collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}})
+            collection_name.update_one({'ISBN': ISBN_string},{'$set':{'rating': new_average_rating, 'num_ratings': new_num_ratings}}, upsert=True)
             db['Users'].update_one({'username': username, "has_read.ISBN": ISBN_string} ,{'$set':{'has_read.$.personal_rating': new_rating}})
             # collection_name.update_one({'ISBN': ISBN_string}, {'$pull': {'ratings':{'username':username}}}, upsert=True)
             # collection_name.update_one({'ISBN': ISBN_string}, {'$push': {'ratings': rating_object}}, upsert=True)
             response = {'personal_rating': new_rating, 'rating': new_average_rating, 'num_ratings': new_num_ratings}
             return JsonResponse(response, status=200)
-        elif json_data['method'] == 'remove_rating':
-            username = json_data['username']
-            collection_name.update_one({'ISBN': ISBN_string}, {'$pull': {'ratings':{'username':username}}}, upsert=True)
+        # elif json_data['method'] == 'remove_rating':
+        #     username = json_data['username']
+        #     collection_name.update_one({'ISBN': ISBN_string}, {'$pull': {'ratings':{'username':username}}}, upsert=True)
             return HttpResponse(status=204)
     else:
         return HttpResponseBadRequest('Only GET and PATCH requests allowed')
