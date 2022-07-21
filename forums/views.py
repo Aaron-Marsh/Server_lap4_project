@@ -43,8 +43,8 @@ def get_threads(request):
             title = json_data['title']
             username = json_data['username']
             first_message = json_data['first_message']
-            add_thread = collection_name.insert_one({'title': title, 'username': username, 'firstmessage': first_message })
-            thread_data = {'id': str(add_thread.inserted_id), 'title': title, 'username': username, 'firstmessage': first_message }
+            add_thread = collection_name.insert_one({'title': title, 'username': username, 'first_message': first_message })
+            thread_data = {'id': str(add_thread.inserted_id), 'title': title, 'username': username, 'first_message': first_message }
             return JsonResponse(thread_data, safe=False)
         except KeyError:
             return HttpResponseBadRequest('Invalid post, check request.body')
