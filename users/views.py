@@ -49,7 +49,7 @@ def get_by_username(request, username):
             user = collection_name.find_one({"username": username})
             user['id'] = str(user['_id'])
             user.pop('_id', None)
-            # user.pop('password', None)
+            user.pop('password', None)
             return JsonResponse(user, safe=False, status=200)
         except TypeError:
             response = {'error': f'Could not find user with username: {username} in database'}
@@ -93,7 +93,19 @@ def get_by_username(request, username):
             about_me = json_data['about_me']
             collection_name.update_one({'username': username} ,{'$set':{'about_me': about_me}}, upsert=True)
             return HttpResponse(status=204)
-        
+        elif json_data['method'] == 'add_to_following':
+            user_to_follow = json_data['user_to_follow']
+            add_not_take = json_data['add_not_take']
+            if add_not_take == True:
+                collection_name.update_one({'username': username},{'$push': {'following': user_to_follow}}, upsert=True)
+            elif add_not_take == False:
+                collection_name.update_one({'username': username},{'$pull': {'following': user_to_follow}}, upsert=True)
+            else:
+                return HttpResponseBadRequest('Check request Body')
+            data = collection_name.find_one({'username': username})
+            following_array = data['following']
+            return JsonResponse(following_array, safe=False, status=200)
+
     else:
         return HttpResponseBadRequest('Only GET and PATCH requests allowed')
 
@@ -115,7 +127,7 @@ def register(request):
         password = json_data['password']
         hashed_password = make_password(password)
         about_me = "This is where I can write a little something about myself!"
-        collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email, 'about_me': about_me, 'has_read':[], 'wants_to_read':[]})
+        collection_name.insert_one({'username': username, 'password': hashed_password, 'email': email, 'about_me': about_me, 'has_read':[], 'wants_to_read':[], 'following':[]})
         response = {'msg': 'You have successfully created a new account. Try to Login!'}
         return JsonResponse(response, safe=False, status=201)
 

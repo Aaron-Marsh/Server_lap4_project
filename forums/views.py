@@ -162,9 +162,9 @@ def get_by_id(request, id):
             username = json_data['username']
             add_not_take = json_data['add_not_take']
             if add_not_take == True:
-                collection_name.update_one({'_id': ObjectId(id)},{'$push': {'likes': username}})
+                collection_name.update_one({'_id': ObjectId(id)},{'$push': {'likes': username}}, upsert=True)
             elif add_not_take == False:
-                collection_name.update_one({'_id': ObjectId(id)},{'$pull': {'likes': username}})
+                collection_name.update_one({'_id': ObjectId(id)},{'$pull': {'likes': username}}, upsert=True)
             else:
                 return HttpResponseBadRequest('Check request Body')
             data = collection_name.find_one({'_id': ObjectId(id)})
