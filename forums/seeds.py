@@ -4,8 +4,8 @@ thread1 = {
     "title": "Hello Chris! This is the title of a thread",
     "username": "Aaron, the creator of this thread",
     "first_message": "The first main message that starts the thread off goes here. Let me know if anything needs to be restructured to make it easier to display/ function, or if you want to display it a different way!",
-    "messages": [{"message_id": "id I will generate for you to be referenced in replies", "username": "user who sent this message", "message": "Whatever could this be?",
     "likes": [],
+    "messages": [{"message_id": "id I will generate for you to be referenced in replies", "username": "user who sent this message", "message": "Whatever could this be?",
     "replies": [
         {
         "reply_id": "987",

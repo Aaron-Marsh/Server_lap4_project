@@ -73,16 +73,16 @@ def get_by_id(request, id):
             first_message = json_data['first_message']
             collection_name.update_one({'_id': ObjectId(id)},{'$set':{'first_message': first_message}}, upsert=True)
             return HttpResponse(status=204)
-        elif json_data['method'] == 'edit_likes':
-            username = json_data['username']
-            if json_data['like_not_unlike'] == True:
-                collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
-                return HttpResponse(status=204)
-            elif json_data['like_not_unlike'] == False:
-                collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
-                return HttpResponse(status=204)
-            else:
-                return HttpResponseBadRequest('Check request body')
+        # elif json_data['method'] == 'edit_likes':
+        #     username = json_data['username']
+        #     if json_data['like_not_unlike'] == True:
+        #         collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
+        #         return HttpResponse(status=204)
+        #     elif json_data['like_not_unlike'] == False:
+        #         collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
+        #         return HttpResponse(status=204)
+        #     else:
+        #         return HttpResponseBadRequest('Check request body')
         elif json_data['method'] == 'thread_message':
             username = json_data['username']
             message = json_data['message']
@@ -163,12 +163,14 @@ def get_by_id(request, id):
             add_not_take = json_data['add_not_take']
             if add_not_take == True:
                 collection_name.update_one({'_id': ObjectId(id)},{'$push': {'likes': username}})
-                return HttpResponse(status=204)
             elif add_not_take == False:
                 collection_name.update_one({'_id': ObjectId(id)},{'$pull': {'likes': username}})
-                return HttpResponse(status=204)
             else:
                 return HttpResponseBadRequest('Check request Body')
+            data = collection_name.find_one({'_id': ObjectId(id)})
+            likes_array = data['likes']
+            return JsonResponse(likes_array, safe=False, status=200)
+
     elif request.method == 'DELETE':
         collection_name.delete_one({'_id': ObjectId(id)})
         return HttpResponse('Thread deleted', status=202)
