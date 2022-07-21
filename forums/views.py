@@ -1,3 +1,4 @@
+from curses.ascii import HT
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseNotFound, HttpResponseBadRequest
 from bson.json_util import loads, dumps
@@ -22,7 +23,6 @@ collection_name.create_index([('title', 'text')], default_language='english')
 # collection_name.insert_many([thread1, thread2])
 
 
-
 # Create your views here.
 def get_threads(request):
     if request.method == 'GET':
@@ -44,8 +44,8 @@ def get_threads(request):
             title = json_data['title']
             username = json_data['username']
             first_message = json_data['first_message']
-            add_thread = collection_name.insert_one({'title': title, 'username': username, 'firstmessage': first_message })
-            thread_data = {'id': str(add_thread.inserted_id), 'title': title, 'username': username, 'firstmessage': first_message }
+            add_thread = collection_name.insert_one({'title': title, 'username': username, 'first_message': first_message })
+            thread_data = {'id': str(add_thread.inserted_id), 'title': title, 'username': username, 'first_message': first_message }
             return JsonResponse(thread_data, safe=False)
         except KeyError:
             return HttpResponseBadRequest('Invalid post, check request.body')
@@ -65,7 +65,25 @@ def get_by_id(request, id):
     elif request.method == 'PATCH':
         data = request.body.decode('utf-8')
         json_data = json.loads(data)
-        if json_data['method'] == 'thread_message':
+        if json_data['method'] == 'edit_thread_title':
+            title = json_data['title']
+            collection_name.update_one({'_id': ObjectId(id)},{'$set':{'title': title}}, upsert=True)
+            return HttpResponse(status=204)
+        elif json_data['method'] == 'edit_thread_first_message':
+            first_message = json_data['first_message']
+            collection_name.update_one({'_id': ObjectId(id)},{'$set':{'first_message': first_message}}, upsert=True)
+            return HttpResponse(status=204)
+        elif json_data['method'] == 'edit_likes':
+            username = json_data['username']
+            if json_data['like_not_unlike'] == True:
+                collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
+                return HttpResponse(status=204)
+            elif json_data['like_not_unlike'] == False:
+                collection_name.update_one({'_id': ObjectId(id)},{'$push':{'likes': username}}, upsert=True)
+                return HttpResponse(status=204)
+            else:
+                return HttpResponseBadRequest('Check request body')
+        elif json_data['method'] == 'thread_message':
             username = json_data['username']
             message = json_data['message']
             message_id = json_data.get('message_id', None)
