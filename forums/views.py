@@ -185,7 +185,7 @@ def search_by_title(request):
         query = json_data['query']
         thread_list = []
         search = collection_name.find(
-   { '$text': { '$search': query } })
+    { '$text': { '$search': query } })
         for thread in search:
             thread['id'] = str(thread['_id'])
             thread.pop('_id', None)
