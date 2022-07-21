@@ -5,6 +5,7 @@ thread1 = {
     "username": "Aaron, the creator of this thread",
     "first_message": "The first main message that starts the thread off goes here. Let me know if anything needs to be restructured to make it easier to display/ function, or if you want to display it a different way!",
     "messages": [{"message_id": "id I will generate for you to be referenced in replies", "username": "user who sent this message", "message": "Whatever could this be?",
+    "likes": [],
     "replies": [
         {
         "reply_id": "987",
@@ -60,6 +61,7 @@ thread2 = {
     "title": "A second thread",
     "username": "user1",
     "first_message": "What an original message this is",
+    "likes": [],
     "messages": [{"message_id": '11111', "username": "user2", "message": "This is message 1",
     "replies": [
         {

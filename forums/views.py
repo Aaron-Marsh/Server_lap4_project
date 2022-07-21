@@ -44,8 +44,8 @@ def get_threads(request):
             title = json_data['title']
             username = json_data['username']
             first_message = json_data['first_message']
-            add_thread = collection_name.insert_one({'title': title, 'username': username, 'first_message': first_message })
-            thread_data = {'id': str(add_thread.inserted_id), 'title': title, 'username': username, 'first_message': first_message }
+            add_thread = collection_name.insert_one({'title': title, 'username': username, 'first_message': first_message, 'likes': [] })
+            thread_data = {'id': str(add_thread.inserted_id), 'title': title, 'username': username, 'first_message': first_message, 'likes': [] }
             return JsonResponse(thread_data, safe=False)
         except KeyError:
             return HttpResponseBadRequest('Invalid post, check request.body')
@@ -158,6 +158,17 @@ def get_by_id(request, id):
                         return HttpResponse(status=204)
             except:
                 return HttpResponseNotFound(f'Could not find reply with reply_id: {reply_id} to delete')
+        elif json_data['method'] == 'edit_thread_likes':
+            username = json_data['username']
+            add_not_take = json_data['add_not_take']
+            if add_not_take == True:
+                collection_name.update_one({'_id': ObjectId(id)},{'$push': {'likes': username}})
+                return HttpResponse(status=204)
+            elif add_not_take == False:
+                collection_name.update_one({'_id': ObjectId(id)},{'$pull': {'likes': username}})
+                return HttpResponse(status=204)
+            else:
+                return HttpResponseBadRequest('Check request Body')
     elif request.method == 'DELETE':
         collection_name.delete_one({'_id': ObjectId(id)})
         return HttpResponse('Thread deleted', status=202)
