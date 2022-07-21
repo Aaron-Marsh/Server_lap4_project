@@ -96,7 +96,10 @@ def get_by_ISBN(request, ISBN):
                 new_average_rating = (original_average_rating * original_num_ratings + new_rating) / new_num_ratings
             elif new_rating == 0:
                 new_num_ratings = original_num_ratings - 1
-                new_average_rating = (original_average_rating * original_num_ratings - old_rating) / new_num_ratings
+                if new_num_ratings != 0:
+                    new_average_rating = (original_average_rating * original_num_ratings - old_rating) / new_num_ratings
+                else:
+                    new_average_rating = 0
             else:
                 new_num_ratings = original_num_ratings
                 new_average_rating = (original_average_rating * original_num_ratings + new_rating - old_rating) / new_num_ratings
