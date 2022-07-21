@@ -146,9 +146,9 @@ def get_books_from_api(request):
                     'num_ratings': our_book.get('num_ratings', 0)
                     }
                 books.append(combined_book)
-        # sorted_books = sorted(books, key = lambda x: x['num_ratings'], reverse=True)
+        sorted_books = sorted(books, key = lambda x: x['num_ratings'], reverse=True)
 
-        return JsonResponse(books, safe=False, status=200)
+        return JsonResponse(sorted_books, safe=False, status=200)
     else:
         return HttpResponseBadRequest('Only POST requests allowed')
 
