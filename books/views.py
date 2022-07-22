@@ -128,7 +128,6 @@ def get_books_from_api(request):
         books = []
         for book in json_res["items"]:
             book_data = book.get('volumeInfo', {'industryIdentifiers':[{'identifier':None}]})
-            print(book_data)
             ISBN = book_data.get('industryIdentifiers',[{'identifier':  None}])[0]['identifier']
             if ISBN != None:
                 collection_name.update_one({'ISBN': ISBN},{'$set':{'ISBN': ISBN}}, upsert=True)

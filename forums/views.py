@@ -168,8 +168,8 @@ def get_by_id(request, id):
             else:
                 return HttpResponseBadRequest('Check request Body')
             data = collection_name.find_one({'_id': ObjectId(id)})
-            likes_array = data['likes']
-            return JsonResponse(likes_array, safe=False, status=200)
+            likes_list = data['likes']
+            return JsonResponse(likes_list, safe=False, status=200)
 
     elif request.method == 'DELETE':
         collection_name.delete_one({'_id': ObjectId(id)})
